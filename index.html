@@ -114,7 +114,18 @@ td input{min-width:76px}
 tr.best td{background:var(--good-soft);font-weight:600}
 .warn.big{font-size:14px;line-height:1.55;margin:12px 0 0;border:1px solid var(--warn-ink)}
 .warn.big ul{margin:6px 0 0;padding-left:20px}
-.flow{margin-top:10px}
+.flow{margin-top:12px}
+.scenhead{font-size:17px;font-weight:800;margin:0 0 8px;padding:8px 12px;border-radius:10px;border-left:5px solid}
+.scenhead span{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px}
+.scenhead.ok{color:var(--good);background:var(--good-soft);border-color:var(--good)}
+.scenhead.ko{color:var(--bad);background:var(--bad-soft);border-color:var(--bad)}
+.plantbl th{font-size:13.5px;color:var(--ink);font-weight:700;text-transform:none}
+.flow th{font-size:14.5px;color:var(--ink);font-weight:800;background:var(--accent-soft);border-bottom:2px solid var(--accent);padding:10px}
+table.compact th{white-space:normal;vertical-align:bottom;line-height:1.25}
+table.compact th,table.compact td{padding:7px 8px;font-size:13.5px}
+table.compact td:nth-child(2){white-space:normal;text-align:left;min-width:150px}
+table.compact th:nth-child(2){text-align:left}
+table.compact td:nth-child(7){white-space:normal;min-width:92px}
 .howbox{margin:14px 0 4px;padding:12px 14px;border-radius:12px;border:1px solid var(--accent);background:var(--accent-soft);font-size:14px;line-height:1.55}
 .howbox ul{margin:6px 0 0;padding-left:20px}
 .howbox li{margin:3px 0}
@@ -133,7 +144,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.9</small></h1>
+  <h1>War Inc · Calcolatore <small>v3.0</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -209,8 +220,8 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 
     <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
-      <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="planTyp"></table></div><div class="tw flow"><table id="flowTyp"></table></div></div>
-      <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="planBad"></table></div><div class="tw flow"><table id="flowBad"></table></div></div>
+      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div><div class="tw flow"><table id="flowTyp"></table></div></div>
+      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div><div class="tw flow"><table id="flowBad"></table></div></div>
     </div>
     <div id="planHow"></div>
     <p class="muted" id="planNote"></p>
@@ -219,7 +230,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <div class="tw"><table id="waitTable"></table></div>
 
     <h3>🃏 Confronto modalità di estrazione</h3>
-    <div class="tw"><table id="extrTable"></table></div>
+    <div class="tw"><table id="extrTable" class="compact"></table></div>
     <p class="muted">Ruota e Asso carte: conviene fermarsi dopo l'ultimo traguardo (100 giri / 100 carte) e ricominciare alla ruota o all'evento successivo. «Rischio» = quanto spendi in più se va male rispetto a quando va normalmente. Le modalità sono ordinate per spesa in euro: è il percorso più economico per arrivare carico all'evento, contando gemme gratis e pass mensili.</p>
 
     <details class="box2"><summary>🔨 Dettaglio fusioni e pietre forgia</summary>
@@ -258,8 +269,8 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
       <p class="muted" id="advPlanNote"></p>
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
-        <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="advPlanTyp"></table></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
-        <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="advPlanBad"></table></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
+        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
+        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
       </div>
       <div id="advPlanHow"></div>
       <h3>🎯 Truppe</h3>
@@ -1024,7 +1035,7 @@ function renderExtr(sorted,chosen,N){
   if(N<=0){ $("#extrTable").innerHTML=`<tr><td class="good">Hai già le copie per il livello scelto: non serve estrarre.</td></tr>`; return; }
   if(!sorted.length){ $("#extrTable").innerHTML=`<tr><td class="muted">Nessuna fonte attiva dà truppe di questa rarità.</td></tr>`; return; }
   const best=sorted[0], own=num(ui.gems);
-  $("#extrTable").innerHTML=`<tr><th>#</th><th>Modalità</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Rischio</th><th>Ruote / eventi</th><th>Ultimo evento</th><th>€ se va normalmente</th><th>€ se va male</th>${own?"<th>Ce la fai con le tue gemme</th>":""}</tr>`+
+  $("#extrTable").innerHTML=`<tr><th>#</th><th>Modalità</th><th>Gemme<br>normale</th><th>Gemme<br>se va male</th><th>Rischio</th><th>Ruote / eventi</th><th>Ultimo evento</th><th>€<br>normale</th><th>€<br>se va male</th>${own?"<th>Bastano le tue gemme</th>":""}</tr>`+
     sorted.map((x,i)=>`<tr${x===chosen?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.label)}${x===chosen?" ✔":""}</td><td>${fmt(x.typ)}</td><td>${fmt(x.bad)}</td><td>${x.typ?pct(x.bad/x.typ-1):"—"}</td><td>${x.cycT!=null?(x.cycT===x.cycB?fmt(x.cycT):`${fmt(x.cycT)}–${fmt(x.cycB)}`):"—"}</td><td>${x.stop?durTxt(x):"un evento"}</td><td>${eur(x.eurT)}</td><td>${eur(x.eurB)}</td>${own?`<td>${fmt(x.pOwned*100,0)}%</td>`:""}</tr>`).join("");
 }
 function renderMergeTable(mp){
