@@ -144,23 +144,23 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 @media (max-width:600px){th,td{padding:6px 7px;font-size:13px}.card{padding:14px}.kv .big{font-size:19px}}
 /* ===== Tema in stile Claude: crema, terracotta, titoli serif ===== */
 :root{
-  --bg:#f4f2ec;--panel:#fbfaf7;--panel2:#f0ede5;--ink:#1f1e1c;--muted:#6f6c64;--line:#e4e0d5;--hl:#efe9dd;
+  --bg:#ece8de;--panel:#fdfcf9;--panel2:#f1ede4;--ink:#1a1917;--muted:#5c5952;--line:#d2ccbe;--line2:#b3ac9c;--hl:#ebe3d3;
   --accent:#c96442;--accent-soft:#f6e8e0;--accent-ink:#fff;
   --good:#4f7a43;--good-soft:#e9efe2;--bad:#b4493a;--bad-soft:#f6e4de;--warn-bg:#f7eedb;--warn-ink:#7a5a14;
   --input:#fff;--shadow:0 1px 2px rgba(60,40,20,.04),0 4px 14px rgba(60,40,20,.05);
   --serif:"Source Serif 4","Iowan Old Style",Georgia,serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#262624;--panel:#30302e;--panel2:#2a2a28;--ink:#f0eee6;--muted:#a8a59b;--line:#42413c;--hl:#3a3935;
+  --bg:#1d1d1b;--panel:#2b2b29;--panel2:#353532;--ink:#f3f1ea;--muted:#b8b5ab;--line:#4d4b46;--line2:#6e6b63;--hl:#403e39;
   --accent:#d97757;--accent-soft:#3d2c25;--accent-ink:#1f1e1d;
   --good:#9fc287;--good-soft:#2e3529;--bad:#e8907b;--bad-soft:#3e2a25;--warn-bg:#3b3320;--warn-ink:#ecd08e;
-  --input:#262624;--shadow:none;
+  --input:#1f1f1d;--shadow:none;
 }}
 :root[data-theme="dark"]{
-  --bg:#262624;--panel:#30302e;--panel2:#2a2a28;--ink:#f0eee6;--muted:#a8a59b;--line:#42413c;--hl:#3a3935;
+  --bg:#1d1d1b;--panel:#2b2b29;--panel2:#353532;--ink:#f3f1ea;--muted:#b8b5ab;--line:#4d4b46;--line2:#6e6b63;--hl:#403e39;
   --accent:#d97757;--accent-soft:#3d2c25;--accent-ink:#1f1e1d;
   --good:#9fc287;--good-soft:#2e3529;--bad:#e8907b;--bad-soft:#3e2a25;--warn-bg:#3b3320;--warn-ink:#ecd08e;
-  --input:#262624;--shadow:none;
+  --input:#1f1f1d;--shadow:none;
 }
 body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 .top{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
@@ -175,7 +175,14 @@ body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-w
 .card h3.bigtitle{font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink);text-transform:none;margin:40px 0 16px;padding:0 0 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
 .btn{border-radius:10px}
 .btn.primary{font-weight:600}
-input,select,textarea{border-radius:10px}
+input,select,textarea{border-radius:10px;border-color:var(--line2)}
+input:disabled{border-color:var(--line)}
+.card{border-color:var(--line2)}
+.tw,.scen,.passrow,details.box2,.tips li,.pill,.btn,.howbox{border-color:var(--line2)}
+.tips li.good{border-left-color:var(--good)}.tips li.bad{border-left-color:var(--bad)}.tips li{border-left-color:var(--accent)}.howbox{border-left-color:var(--accent)}
+th{border-bottom:1px solid var(--line2)}
+.top{border-bottom-color:var(--line2)}
+.card h3.bigtitle{border-bottom-color:var(--line2)}
 .pill{background:var(--panel2);border:1px solid var(--line);color:var(--ink)}
 .pill b{color:var(--accent)}
 /* scenari */
@@ -212,7 +219,7 @@ details.box2{border-radius:14px;background:var(--panel)}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v3.4</small></h1>
+  <h1>War Inc · Calcolatore <small>v3.5</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
