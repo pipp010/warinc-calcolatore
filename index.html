@@ -114,13 +114,13 @@ td input{min-width:76px}
 tr.best td{background:var(--good-soft);font-weight:600}
 .warn.big{font-size:14px;line-height:1.55;margin:12px 0 0;border:1px solid var(--warn-ink)}
 .warn.big ul{margin:6px 0 0;padding-left:20px}
-.flow{margin-top:12px}
+.flow{margin-top:0}
 .scenhead{font-size:17px;font-weight:800;margin:0 0 8px;padding:8px 12px;border-radius:10px;border-left:5px solid}
 .scenhead span{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px}
 .scenhead.ok{color:var(--good);background:var(--good-soft);border-color:var(--good)}
 .scenhead.ko{color:var(--bad);background:var(--bad-soft);border-color:var(--bad)}
 .plantbl th{font-size:13.5px;color:var(--ink);font-weight:700;text-transform:none}
-.flow th{font-size:14.5px;color:var(--ink);font-weight:800;background:var(--accent-soft);border-bottom:2px solid var(--accent);padding:10px}
+.flow th{font-size:13.5px;color:var(--ink);font-weight:700;background:var(--accent-soft);border-bottom:2px solid var(--accent);padding:10px}
 table.compact th{white-space:normal;vertical-align:bottom;line-height:1.25}
 table.compact th,table.compact td{padding:7px 8px;font-size:13.5px}
 table.compact td:nth-child(2){white-space:normal;text-align:left;min-width:150px}
@@ -144,7 +144,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v3.0</small></h1>
+  <h1>War Inc · Calcolatore <small>v3.1</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -220,8 +220,13 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 
     <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
-      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div><div class="tw flow"><table id="flowTyp"></table></div></div>
-      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div><div class="tw flow"><table id="flowBad"></table></div></div>
+      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div></div>
+      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div></div>
+    </div>
+    <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
+    <div class="cols">
+      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="flowTyp"></table></div></div>
+      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="flowBad"></table></div></div>
     </div>
     <div id="planHow"></div>
     <p class="muted" id="planNote"></p>
@@ -269,8 +274,13 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
       <p class="muted" id="advPlanNote"></p>
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
-        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
-        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
+        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div></div>
+        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div></div>
+      </div>
+      <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
+      <div class="cols">
+        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
+        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
       </div>
       <div id="advPlanHow"></div>
       <h3>🎯 Truppe</h3>
@@ -995,7 +1005,7 @@ function gemFlow(plan,need,Dh){
 function renderFlow(id,f,when){
   const el=$(id); if(!el) return;
   if(!f||f.need<=0){ el.innerHTML=""; return; }
-  el.innerHTML=`<tr><th colspan="3" class="l">📥 Da dove arrivano le gemme · da oggi ${when}</th></tr>`+
+  el.innerHTML=`<tr><th colspan="3" class="l">📆 Da oggi ${when}</th></tr>`+
     f.L.map(x=>`<tr><td class="l">${x.icon} ${x.name}</td><td class="l muted">${x.formula}</td><td>${fmt(x.v)}</td></tr>`).join("")+
     `<tr><td class="l"><b>Totale a disposizione</b></td><td></td><td><b>${fmt(f.tot)}</b></td></tr>`+
     `<tr><td class="l">🎯 Da spendere per l'obiettivo</td><td></td><td>− ${fmt(f.need)}</td></tr>`+
