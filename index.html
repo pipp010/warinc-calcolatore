@@ -38,6 +38,7 @@ section.page{display:none}section.page.on{display:block}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:var(--shadow)}
 .card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
 .card h3{font-size:13px;margin:22px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.card h3.bigtitle{font-size:19px;color:var(--ink);text-transform:none;letter-spacing:0;margin:28px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--accent)}
 .card .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 .step{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:14px;flex:none}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -101,7 +102,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.6 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.7 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -156,7 +157,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <h3>💡 Suggerimenti</h3>
     <ul class="tips" id="tips"></ul>
 
-    <h3>🛒 Cosa comprare</h3>
+    <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
       <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="planTyp"></table></div></div>
       <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="planBad"></table></div></div>
@@ -767,10 +768,10 @@ function renderPlan(id,plan,D,G){
   if(!plan){ $(id).innerHTML=`<tr><td class="muted">Impossibile calcolare: controlla pacchetti e conversioni nelle Impostazioni.</td></tr>`; return; }
   const r=[];
   if(D>0&&plan.free>0) r.push([`🏰 Gratis in ${gg(D)} (QG${otherDaily()?" + altre entrate":""})`, "—", `${fmt(Math.min(plan.free,G))} gemme`, eur(0)]);
-  plan.used.forEach(u=>r.push([`📅 ${esc(u.c.name)}`, u.buys, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
-  plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}`, x.q, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
-  plan.bp.r.items.forEach(x=>r.push([`💠 Eternity Stone ${esc(x.p.name)}`, x.q, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
-  plan.bp.cp.items.forEach(x=>r.push([`🔁 Converti ${fmt(x.t.stones)} → ${fmt(x.t.gems)} gemme`, x.q, `${fmt(x.t.gems*x.q)} gemme`, "—"]));
+  plan.used.forEach(u=>r.push([`📅 ${esc(u.c.name)}`, `${u.buys}×`, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
+  plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
+  plan.bp.r.items.forEach(x=>r.push([`💠 Pacchetto Eternity Stone da ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
+  plan.bp.cp.items.forEach(x=>r.push([`🔁 Converti in gioco ${fmt(x.t.stones)} Eternity Stone → ${fmt(x.t.gems)} gemme`, `${x.q}×`, `${fmt(x.t.gems*x.q)} gemme`, "—"]));
   $(id).innerHTML=`<tr><th>Cosa</th><th>Q.tà</th><th>Ottieni</th><th>€</th></tr>`+
     (r.length?r.map(x=>`<tr><td class="l">${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("")+`<tr class="best"><td>Totale</td><td></td><td>${fmt(G)} gemme</td><td>${eur(plan.cost)}</td></tr>`
      :`<tr><td colspan="4" class="good">Bastano le gemme gratis, non serve comprare niente.</td></tr>`);
