@@ -102,7 +102,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.9 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.0 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -151,6 +151,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <p class="sub" id="resTitle"></p>
     <div class="head" id="head"></div>
     <div class="summary" id="summary"></div>
+    <div id="timeWarn"></div>
     <div id="riskWarn"></div>
 
     <h3>💡 Suggerimenti</h3>
@@ -163,7 +164,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     </div>
     <p class="muted" id="planNote"></p>
 
-    <h3>⏳ Quanto spendi in base a quanto puoi aspettare</h3>
+    <h3 id="waitTitle">⏳ Quanto spendi in base a quanto puoi aspettare</h3>
     <div class="tw"><table id="waitTable"></table></div>
 
     <h3>🃏 Confronto modalità di estrazione</h3>
@@ -258,6 +259,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <ol>
       <li>In <b>Cosa ho</b> inserisci gemme, pergamene, pietre forgia, livello del QG e le copie del personaggio che possiedi.</li>
       <li>In <b>Cosa voglio</b> scegli rarità, livello, quante copie a quel livello e in quanti giorni (oppure «Subito»).</li>
+      <li>Con Ruota e Asso carte «fermati a 100» le gemme servono un evento alla volta: tra un evento e l'altro (di default 30 giorni, si cambia nelle Impostazioni) accumuli gemme gratis. Il calcolatore mostra il calendario evento per evento e quanto comprare in tutto. Se gli eventi necessari non ci stanno nei giorni che hai indicato, te lo segnala.</li>
       <li>Sotto trovi sempre due ipotesi: <b>se va normalmente</b> e <b>se va male</b>, con quante gemme servono, quante mancano, cosa comprare e quanto costa.</li>
     </ol>
     <h2 style="margin-top:18px">Cosa vogliono dire le due ipotesi</h2>
@@ -292,7 +294,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 15,
+  ver: 16,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -304,7 +306,7 @@ const DEFAULTS = {
   },
   discount: { pct:15 },
   sources: [
-    { name:"Ruota", unit:"giri", cost:100, on:true, start:0, cycle:0, stops:"100", continuous:true, scrolls:false,
+    { name:"Ruota", unit:"giri", cost:100, on:true, start:0, cycle:0, stops:"100", continuous:true, every:30, scrolls:false,
       rates:{mythic:[{p:.035,c:1},{p:.005,c:2}],legendary:[{p:.15,c:1}],epic:[{p:.16,c:1}],rare:[{p:.40,c:1}],common:[]},
       pool:{mythic:1,legendary:1,epic:1,rare:1,common:1},
       milestones:"10: carta mythic x1 scelta\n25: gemme 500\n50: carta mythic x1 scelta\n100: carta mythic x2 scelta\n200: forgia 500",
@@ -313,7 +315,7 @@ const DEFAULTS = {
       rates:{mythic:[{p:.12,c:1}],legendary:[],epic:[],rare:[],common:[]},
       pool:{mythic:3,legendary:1,epic:1,rare:1,common:1},
       milestones:"", note:"3 mitici al 4% ciascuno (12% in tutto). Prima si usano le pergamene." },
-    { type:"board", name:"Asso carte", unit:"carte", cost:250, cards:12, hits:1, multi:5, on:true, start:0, stops:"100", continuous:true,
+    { type:"board", name:"Asso carte", unit:"carte", cost:250, cards:12, hits:1, multi:5, on:true, start:0, stops:"100", continuous:true, every:30,
       milestones:MS_ASSO,
       note:"12 carte coperte, 1 mitico. Trovato il mitico il tabellone si rimescola. ×5: costo, premio e traguardi ×5." }
   ],
@@ -370,7 +372,8 @@ function loadCfg(raw){
   if(v<13) (c.gemPacks||[]).forEach(p=>{ if(p.name==="Pacchetto in gioco"){ p.name="Pacchetto fornitura avanzata"; p.extra="120.000 monete"; } });
   if(v<14) c.sources.forEach(x=>{ if(x.type==="board"){ x.stops="100"; x.continuous=true; } });
   if(v<15) (c.cards||[]).forEach(x=>{ if(x.name==="Carta mensile gemme") x.name="Pass mensile gemme"; });
-  c.ver=15;
+  c.sources.forEach(x=>{ if(/d/.test(String(x.stops||""))&&!(x.every>0)) x.every=30; });
+  c.ver=16;
   return c;
 }
 function loadUi(){
@@ -543,7 +546,7 @@ function extractionRows(N,rar,owned){
         rows.push({id:`${si}@${stop}`, src, stop, multi, unit,
           label:`${src.name}${multi?" ×"+r.m:""}`+stopLabel(src,stop),
           mean:meanOf(r.cdf)*u, typ:uT*u, bad:uB*u, nT:uT, nB:uB,
-          cycT:stop?Math.ceil(uT/stop):null, cycB:stop?Math.ceil(uB/stop):null, fsT:0, fsB:0, pOwned});
+          cycT:stop?Math.ceil(uT/stop):null, cycB:stop?Math.ceil(uB/stop):null, fsT:0, fsB:0, pOwned, perCycle:stop?stop*u:null, every:+src.every||30});
       }));
     } else {
       variants.forEach(stop=>{
@@ -554,7 +557,7 @@ function extractionRows(N,rar,owned){
         rows.push({id:`${si}@${stop}`, src, stop, unit,
           label:src.name+stopLabel(src,stop)+(stop&&fsTxt?` +${fmt(fsTxt)} pietre forgia a ruota`:"")+(!stop&&fsMs.length?` · +${fmt(fsMs[0].amount)} pietre forgia al giro ${fsMs[0].at}`:""),
           mean:gemCost(s,Math.round(meanOf(r.cdf))), typ:gemCost(s,kT), bad:gemCost(s,kB), nT:kT, nB:kB,
-          cycT:stop?Math.ceil(kT/stop):null, cycB:stop?Math.ceil(kB/stop):null, fsT:fsGained(s,kT), fsB:fsGained(s,kB), pOwned:r.cdf[k]||0});
+          cycT:stop?Math.ceil(kT/stop):null, cycB:stop?Math.ceil(kB/stop):null, fsT:fsGained(s,kT), fsB:fsGained(s,kB), pOwned:r.cdf[k]||0, perCycle:stop?gemCost(s,stop):null, every:+src.every||30});
       });
     }
   });
@@ -698,17 +701,42 @@ $("#wDisc").onchange=e=>{ ui.disc=e.target.checked; saveUi(); recalc(); };
 let recalcTimer=null;
 function recalc(){ clearTimeout(recalcTimer); recalcTimer=setTimeout(recalcNow,80); }
 
+// tempo necessario per una modalità a eventi (primo evento subito, poi uno ogni "every" giorni)
+let LIMIT=0;
+const durOf=(r,key)=>r&&r.stop?(((key==="typ"?r.cycT:r.cycB)||1)-1)*r.every:0;
+const durTxt=r=>{ const a=durOf(r,"typ"), b=durOf(r,"bad"); const f=d=>d===0?"subito":(d>=60?`~${fmt(d/30,d%30?1:0)} mesi`:gg(d)); return a===b?f(a):`${f(a)} – ${f(b)}`; };
+
+// piano di spesa evento per evento: le gemme servono solo quando arriva ogni ruota/evento
+function eventPlan(row,key,need){
+  const C=Math.max(1,key==="typ"?row.cycT:row.cycB), every=row.every, H=(C-1)*every, own=num(ui.gems);
+  const cards=cfg.cards.filter(c=>c.on&&c.days>0), fd=freeDaily();
+  const sched=[]; for(let k=1;k<=C;k++){ const t=(k-1)*every; sched.push({k,t,spend:Math.max(0,Math.min(row.perCycle,need-(k-1)*row.perCycle)),cum:Math.min(k*row.perCycle,need)}); }
+  let best=null;
+  for(let mask=0;mask<(1<<cards.length);mask++){
+    const used=cards.filter((c,i)=>mask&(1<<i));
+    const inc=t=>own+fd*t+used.reduce((s,c)=>s+cardGems(c,t).gems,0);
+    let R=0; sched.forEach(e=>{ R=Math.max(R,e.cum-inc(e.t)); });
+    const bp=buyPlan(Math.ceil(R),Math.max(1,H)); if(!bp) continue;
+    const eurC=used.reduce((s,c)=>s+cardGems(c,H).eur,0), tot=eurC+bp.cost;
+    if(!best||tot<best.cost-1e-9) best={cost:tot,free:Math.floor(fd*H),used:used.map(c=>({c,...cardGems(c,H)})),bp,fromCards:0,events:true,H,C,sched,inc,R};
+  }
+  return best;
+}
+
 function recalcNow(){
   planCache.clear();
   const rar=ui.rarity, target=Math.min(+ui.target||2,cfg.maxLevel), qty=Math.max(1,ui.qty|0), D=ui.now?0:Math.max(1,num(ui.days,1));
+  LIMIT=D;
   const who=`personaggio <b class="r-${rar}">${RAR_IT[rar]}</b>`;
   const mp=planMerge(ui.inv,target,qty,rar,ui.disc), N=mp.cardsMissing;
   $("#resTitle").innerHTML=`Obiettivo: <b>${qty}</b> ${qty===1?"copia":"copie"} di ${who} a livello <b>${target}</b>, ${D?`entro <b>${gg(D)}</b>`:"<b>subito</b>"}.`;
 
   const rows=extractionRows(N,rar,num(ui.gems));
   const sorted=[...rows].sort((a,b)=>a.typ-b.typ||a.bad-b.bad);
-  let chosen=ui.mode==="auto"?sorted[0]:rows.find(r=>r.id===String(ui.mode));
+  const fits=r=>durOf(r,"typ")<=D;
+  let chosen=ui.mode==="auto"?(sorted.find(fits)||sorted[0]):rows.find(r=>r.id===String(ui.mode));
   if(!chosen) chosen=sorted[0];
+  const ev=!!(chosen&&chosen.stop);
 
   // le due ipotesi
   const sc=["typ","bad"].map(key=>{
@@ -716,34 +744,64 @@ function recalcNow(){
     const miss=need==null?null:Math.max(0,need-num(ui.gems));
     const fsGot=chosen?(key==="typ"?chosen.fsT:chosen.fsB):0;
     const forgeMiss=Math.max(0,mp.forge-num(ui.forge)-fsGot);
-    return {key,need,miss,plan:miss==null?null:spendPlan(miss,D),forgeMiss,fsGot,cyc:chosen?(key==="typ"?chosen.cycT:chosen.cycB):null,n:chosen?(key==="typ"?chosen.nT:chosen.nB):null};
+    const plan=miss==null?null:(ev&&N>0?eventPlan(chosen,key,need):spendPlan(miss,D));
+    return {key,need,miss,plan,forgeMiss,fsGot,dur:durOf(chosen,key),cyc:chosen?(key==="typ"?chosen.cycT:chosen.cycB):null,n:chosen?(key==="typ"?chosen.nT:chosen.nB):null};
   });
 
   $("#head").innerHTML=
     `<span class="pill">Copie L1 da ottenere: <b>${fmt(N)}</b></span>`+
     `<span class="pill">Fusioni: <b>${fmt(mp.merges)}</b></span>`+
     `<span class="pill">Pietre forgia per le fusioni: <b>${fmt(mp.forge)}</b></span>`+
-    (N>0&&chosen?`<span class="pill">Modalità: <b>${esc(chosen.label)}</b></span>`:"");
+    (N>0&&chosen?`<span class="pill">Modalità: <b>${esc(chosen.label)}</b></span>`:"")+
+    (N>0&&ev?`<span class="pill">Un evento ogni <b>${gg(chosen.every)}</b>, circa <b>${fmt(chosen.perCycle)}</b> gemme a evento</span>`:"");
+  const nomeEv=chosen&&chosen.src.type==="board"?"Eventi":"Ruote";
   $("#summary").innerHTML=sc.map(s=>{
     const ok=s.key==="typ";
-    const cyc=s.cyc!=null&&chosen?`<div>${chosen.src.type==="board"?"Eventi":"Ruote"} da fare (${stopLabel(chosen.src,chosen.stop).slice(3)})</div><div>${fmt(s.cyc)}</div>`:(s.n!=null&&N>0&&chosen?`<div>${chosen.unit?chosen.unit[0].toUpperCase()+chosen.unit.slice(1):"Tentativi"}</div><div>${fmt(s.n)}</div>`:"");
+    const cyc=ev&&N>0?`<div>${nomeEv} da fare (${stopLabel(chosen.src,chosen.stop).slice(3)})</div><div>${fmt(s.cyc)}</div><div>Tempo necessario</div><div class="${s.dur>D?"bad":""}">${s.dur===0?"subito":gg(s.dur)}</div>`
+      :(s.n!=null&&N>0&&chosen?`<div>${chosen.unit?chosen.unit[0].toUpperCase()+chosen.unit.slice(1):"Tentativi"}</div><div>${fmt(s.n)}</div>`:"");
+    const spesa=ev&&N>0?`Spesa minima (fino ${nomeEv==="Ruote"?"all'ultima ruota":"all'ultimo evento"})`:`Spesa minima ${D?`entro ${gg(D)}`:"subito"}`;
     return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"🙂 Se va normalmente":"😬 Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
       <div class="kv">${cyc}
-        <div>Gemme necessarie</div><div>${fmt(s.need)}</div>
-        <div>Gemme che ti mancano</div><div class="${s.miss>0?"bad":"good"}">${fmt(s.miss)}</div>
+        <div>Gemme necessarie in tutto</div><div>${fmt(s.need)}</div>
+        <div>${ev&&N>0?"Gemme da comprare (oltre a quelle gratis)":"Gemme che ti mancano"}</div><div class="${(ev&&N>0?(s.plan&&s.plan.R>0):s.miss>0)?"bad":"good"}">${fmt(ev&&N>0?(s.plan?Math.ceil(s.plan.R):null):s.miss)}</div>
         <div>Pietre forgia mancanti${s.fsGot?` (dopo le ${fmt(s.fsGot)} della ruota)`:""}</div><div class="${s.forgeMiss>0?"bad":"good"}">${fmt(s.forgeMiss)}</div>
-        <div>Spesa minima ${D?`entro ${gg(D)}`:"subito"}</div><div class="big">${s.plan?eur(s.plan.cost):"—"}</div>
+        <div>${spesa}</div><div class="big">${s.plan?eur(s.plan.cost):"—"}</div>
       </div></div>`;
   }).join("");
+
+  // avviso tempi
+  let tw="";
+  if(N>0&&ev&&sc[0].dur>D){
+    const alt=sorted.find(fits);
+    tw=`<div class="warn big"><b>⏰ Non ci stai nei tempi.</b> Con <b>${esc(chosen.label)}</b> servono ${fmt(sc[0].cyc)} ${nomeEv.toLowerCase()} (una ogni ~${gg(chosen.every)}): circa <b>${gg(sc[0].dur)}</b>, oltre il limite di ${D?gg(D):"«subito»"}.`+
+      (alt?` Per stare nei tempi la più conveniente è <b>${esc(alt.label)}</b> (${fmt(alt.typ)} gemme se va normalmente${alt.typ>chosen.typ?`, ${pct(alt.typ/chosen.typ-1)}`:""}).`:" Nessuna modalità ci sta: allunga i giorni.")+`</div>`;
+  } else if(N>0&&ev&&sc[1].dur>D){
+    tw=`<div class="warn big"><b>⏰ Attenzione ai tempi:</b> se va normalmente bastano ${fmt(sc[0].cyc)} ${nomeEv.toLowerCase()} (${sc[0].dur?gg(sc[0].dur):"subito"}), ma se va male ne servono ${fmt(sc[1].cyc)}: circa ${gg(sc[1].dur)}, oltre il limite di ${D?gg(D):"«subito»"}.</div>`;
+  }
+  $("#timeWarn").innerHTML=tw;
 
   renderRiskWarn(chosen,rows,N);
   renderPlan("#planTyp",sc[0].plan,D,sc[0].miss);
   renderPlan("#planBad",sc[1].plan,D,sc[1].miss);
-  renderWait(sc,D);
+  if(ev&&N>0) renderSchedule(sc,chosen); else { $("#waitTitle").textContent="⏳ Quanto spendi in base a quanto puoi aspettare"; renderWait(sc,D); }
   renderExtr(sorted,chosen,N);
   renderMergeTable(mp);
   renderGemRank();
   renderTips({N,mp,rows,sorted,chosen,sc,D,rar,target,qty});
+}
+
+// calendario evento per evento (ipotesi "se va male", che comprende anche quella normale)
+function renderSchedule(sc,row){
+  const nome=row.src.type==="board"?"Evento":"Ruota";
+  $("#waitTitle").textContent=`📅 Calendario ${row.src.type==="board"?"degli eventi":"delle ruote"} (${stopLabel(row.src,row.stop).slice(3)})`;
+  const P=sc[1].plan, T=sc[0].plan; if(!P){ $("#waitTable").innerHTML=""; return; }
+  const fd=freeDaily();
+  $("#waitTable").innerHTML=`<tr><th>#</th><th>Quando</th><th>Gemme da spendere</th><th>Gemme gratis accumulate</th><th>Totale speso</th><th class="l">Note</th></tr>`+
+    P.sched.map(e=>{
+      const extra=e.k>(T?T.C:0);
+      return `<tr${extra?' style="opacity:.75"':""}><td>${nome} ${e.k}</td><td>${e.t===0?"subito":"giorno "+fmt(e.t)}</td><td>${fmt(e.spend)}</td><td>${fmt(num(ui.gems)+fd*e.t)}</td><td>${fmt(e.cum)}</td><td class="l muted">${extra?"serve solo se va male":""}</td></tr>`;
+    }).join("")+
+    `<tr class="best"><td colspan="2">Da comprare in tutto</td><td colspan="4" class="l">se va normalmente <b>${fmt(T?Math.ceil(T.R):0)}</b> gemme (${eur(T?T.cost:0)}) · se va male <b>${fmt(Math.ceil(P.R))}</b> gemme (${eur(P.cost)}), pass mensili compresi</td></tr>`;
 }
 
 function renderRiskWarn(chosen,rows,N){
@@ -761,11 +819,12 @@ function renderRiskWarn(chosen,rows,N){
     <div style="margin-top:6px">👉 Usa ×${m} solo se vuoi girare meno carte e fare prima: non fa risparmiare gemme.</div></div>`;
 }
 function renderPlan(id,plan,D,G){
+  const ev=plan&&plan.events; if(ev) D=plan.H;
   if(G==null){ $(id).innerHTML=`<tr><td class="muted">Nessuna fonte disponibile per questa rarità: controlla le Impostazioni.</td></tr>`; return; }
   if(G<=0){ $(id).innerHTML=`<tr><td class="good">Hai già abbastanza gemme 🎉</td></tr>`; return; }
   if(!plan){ $(id).innerHTML=`<tr><td class="muted">Impossibile calcolare: controlla pacchetti e conversioni nelle Impostazioni.</td></tr>`; return; }
   const r=[];
-  if(D>0&&plan.free>0) r.push([`🏰 Gratis in ${gg(D)} (QG${otherDaily()?" + altre entrate":""})`, "—", `${fmt(Math.min(plan.free,G))} gemme`, eur(0)]);
+  if(D>0&&plan.free>0) r.push([ev?`🏰 Gratis accumulate fino all'ultimo evento (${gg(D)})`:`🏰 Gratis in ${gg(D)} (QG${otherDaily()?" + altre entrate":""})`, "—", `${fmt(ev?Math.max(0,Math.min(plan.free,G-Math.ceil(plan.R)-plan.used.reduce((a,u)=>a+u.gems,0))):Math.min(plan.free,G))} gemme`, eur(0)]);
   plan.used.forEach(u=>r.push([`📅 ${esc(u.c.name)}`, `${u.buys}×`, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
   plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
   plan.bp.r.items.forEach(x=>r.push([`💠 Pacchetto Eternity Stone da ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
@@ -789,8 +848,8 @@ function renderExtr(sorted,chosen,N){
   if(N<=0){ $("#extrTable").innerHTML=`<tr><td class="good">Hai già le copie per il livello scelto: non serve estrarre.</td></tr>`; return; }
   if(!sorted.length){ $("#extrTable").innerHTML=`<tr><td class="muted">Nessuna fonte attiva dà personaggi di questa rarità.</td></tr>`; return; }
   const best=sorted[0], own=num(ui.gems);
-  $("#extrTable").innerHTML=`<tr><th>#</th><th>Modalità</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Rischio</th><th>Ruote / eventi</th><th>vs migliore</th>${own?"<th>Ce la fai con le tue gemme</th>":""}</tr>`+
-    sorted.map((x,i)=>`<tr${x===chosen?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.label)}${x===chosen?" ✔":""}</td><td>${fmt(x.typ)}</td><td>${fmt(x.bad)}</td><td>${x.typ?pct(x.bad/x.typ-1):"—"}</td><td>${x.cycT!=null?(x.cycT===x.cycB?fmt(x.cycT):`${fmt(x.cycT)}–${fmt(x.cycB)}`):"—"}</td><td>${i===0?"—":pct(x.typ/best.typ-1)}</td>${own?`<td>${fmt(x.pOwned*100,0)}%</td>`:""}</tr>`).join("");
+  $("#extrTable").innerHTML=`<tr><th>#</th><th>Modalità</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Rischio</th><th>Ruote / eventi</th><th>Tempo necessario</th><th>vs migliore</th>${own?"<th>Ce la fai con le tue gemme</th>":""}</tr>`+
+    sorted.map((x,i)=>`<tr${x===chosen?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.label)}${x===chosen?" ✔":""}</td><td>${fmt(x.typ)}</td><td>${fmt(x.bad)}</td><td>${x.typ?pct(x.bad/x.typ-1):"—"}</td><td>${x.cycT!=null?(x.cycT===x.cycB?fmt(x.cycT):`${fmt(x.cycT)}–${fmt(x.cycB)}`):"—"}</td><td class="${durOf(x,"typ")>LIMIT?"bad":""}">${x.stop?durTxt(x):"un evento"}</td><td>${i===0?"—":pct(x.typ/best.typ-1)}</td>${own?`<td>${fmt(x.pOwned*100,0)}%</td>`:""}</tr>`).join("");
 }
 function renderMergeTable(mp){
   $("#mergeTable").innerHTML=`<tr><th>Livello</th><th>Servono</th><th>Già hai</th><th>Da creare / ottenere</th><th>Pietre per fusione</th><th>Pietre totali</th></tr>`+
@@ -835,7 +894,11 @@ function renderTips(c){
   });
   if(c.rows.some(r=>r.multi)) add("",`Asso carte: il ×5 <b>non fa risparmiare gemme</b> (stesso costo per carta e per i traguardi) ma rende il risultato più variabile. Serve solo a fare prima.`);
   if(c.rows.some(r=>r.src.scrolls)&&num(ui.scrolls)) add("",`Le tue ${fmt(ui.scrolls)} pergamene valgono ${fmt(ui.scrolls)} evocazioni gratis nell'Evocazione limitata (già conteggiate).`);
-  if(B.miss>0&&B.plan){
+  if(c.chosen&&c.chosen.stop&&c.N>0){
+    const ev=c.chosen, fm=freeDaily()*ev.every, nome=ev.src.type==="board"?"evento":"ruota";
+    add(fm>=ev.perCycle?"good":"",`Ogni ${nome} (${stopLabel(ev.src,ev.stop).slice(3)}) costa circa <b>${fmt(ev.perCycle)}</b> gemme. Tra un${nome==="ruota"?"a ruota":" evento"} e l'altr${nome==="ruota"?"a":"o"} (~${gg(ev.every)}) accumuli <b>${fmt(fm)}</b> gemme gratis${fm>=ev.perCycle?": bastano da sole, ogni "+nome+" la fai senza spendere.":", ne mancano "+fmt(ev.perCycle-fm)+" a "+nome+" (i pass mensili ne coprono gran parte)."}`);
+  }
+  if(B.miss>0&&B.plan&&!(c.chosen&&c.chosen.stop)){
     if(c.D<30){ const p30=spendPlan(B.miss,30); if(p30&&p30.cost<B.plan.cost-0.5) add("good",`Se puoi aspettare 30 giorni, anche se va male spendi <b>${eur(p30.cost)}</b> invece di ${eur(B.plan.cost)}.`); }
     const on=cfg.cards.filter(x=>x.on&&x.upfront+x.daily*x.days>0);
     if(on.length){ const best=on.map(x=>({x,v:x.eur/(x.upfront+x.daily*x.days)*1000})).sort((a,b)=>a.v-b.v)[0]; const g=bestGemsPerStone(), es=cfg.packs.filter(p=>p.gems>0).map(p=>p.eur/p.gems/(g||1)*1000), esMin=es.length?Math.min(...es):null;
@@ -883,6 +946,7 @@ function renderSources(){
       <div class="field"><label>Nome</label><input data-s="${i}" data-k="name" value="${esc(s.name)}"></div>
       <div class="field"><label>Gemme per tentativo</label><input type="number" data-s="${i}" data-k="cost" value="${s.cost}"></div>
       <div class="field"><label>Fermati a (es. 100)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label>Giorni tra un evento e l'altro</label><input type="number" min="1" data-s="${i}" data-k="every" value="${s.every||30}"></div>
       <div class="field"><label>Nome dei tentativi</label><input data-s="${i}" data-k="unit" value="${esc(s.unit||"")}" placeholder="giri"></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="continuous" ${s.continuous?"checked":""}> Proponi anche «a oltranza»</label></div>
@@ -907,6 +971,7 @@ function boardSrcHtml(s,i){
       <div class="field"><label>Carte col mitico</label><input type="number" min="1" data-s="${i}" data-k="hits" value="${s.hits}"></div>
       <div class="field"><label>Moltiplicatore (costo, premio, traguardi)</label><input type="number" min="1" data-s="${i}" data-k="multi" value="${s.multi}"></div>
       <div class="field"><label>Fermati a (carte girate)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label>Giorni tra un evento e l'altro</label><input type="number" min="1" data-s="${i}" data-k="every" value="${s.every||30}"></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="continuous" ${s.continuous?"checked":""}> Proponi anche «a oltranza»</label></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
     </div>
@@ -920,7 +985,7 @@ $("#srcList").addEventListener("change",e=>{
   const t=e.target,i=t.dataset.s; if(i==null) return; const s=cfg.sources[i];
   if(t.dataset.rate) s.rates[t.dataset.rate]=strToRates(t.value);
   else if(t.dataset.pool) s.pool[t.dataset.pool]=Math.max(1,+t.value||1);
-  else { const k=t.dataset.k; s[k]=(k==="on"||k==="scrolls"||k==="continuous")?t.checked:(["cost","start","cycle","cards","hits","multi"].includes(k)?num(t.value):t.value); }
+  else { const k=t.dataset.k; s[k]=(k==="on"||k==="scrolls"||k==="continuous")?t.checked:(["cost","start","cycle","cards","hits","multi","every"].includes(k)?num(t.value):t.value); }
   const open=[...document.querySelectorAll("#srcList details")].map(d=>d.open);
   renderSources(); document.querySelectorAll("#srcList details").forEach((d,j)=>d.open=open[j]);
   changed();
