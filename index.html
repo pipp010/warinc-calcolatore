@@ -82,6 +82,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 .pill b{color:var(--accent)}
 .tips{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .tips li{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px}
+.tips li.more{background:transparent;border:0;padding:0}
+.tips li.more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:4px 2px}
 .tips li.good{border-left-color:var(--good)}.tips li.bad{border-left-color:var(--bad)}
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
@@ -109,7 +111,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.4 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.5</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -151,7 +153,8 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
         <div class="field"><label>Livello da raggiungere</label><select id="wTarget"></select></div>
         <div class="field"><label>Quante copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
         <div class="field wide"><label>Quando inizia l'evento a cui vuoi arrivare carico</label>
-          <div class="daysbox"><input id="wDays" type="number" min="1" style="max-width:110px"><span class="muted">giorni, oppure il</span><input id="wDate" type="date" style="max-width:170px"><label class="check"><input type="checkbox" id="wNow"> Subito</label></div></div>
+          <div class="daysbox"><input id="wDays" type="number" min="1" style="max-width:110px"><span class="muted">giorni, oppure il</span><input id="wDate" type="date" style="max-width:170px"><label class="check"><input type="checkbox" id="wNow"> Subito</label><span class="muted">· finisce il</span><input id="wEnd" type="date" style="max-width:170px"></div></div>
+        <div class="field"><label>Fai i conti per giocare</label><select id="wPlay"><option value="first">il primo giorno dell'evento</option><option value="last">l'ultimo giorno dell'evento</option></select></div>
         <div class="field"><label>Modalità di estrazione</label><select id="wMode"></select></div>
         <div class="field" id="x5Field" style="display:none"><label class="check"><input type="checkbox" id="wX5"> Estrazione ×<span id="x5Lbl">5</span></label></div>
       </div>
@@ -205,7 +208,8 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     </div>
     <div class="card">
       <h2><span class="step">3</span> Eventi a cui partecipi</h2>
-      <p class="sub">Per ogni evento: che tipo è, per quale truppa, quando inizia e quanto giocarlo. Più eventi possono essere nella stessa settimana.</p>
+      <p class="sub">Per ogni evento: che tipo è, per quale truppa, quando inizia e finisce e quanto giocarlo. Più eventi possono essere nella stessa settimana.</p>
+      <div class="fields" style="margin-bottom:10px"><div class="field"><label>Fai i conti per giocare</label><select id="advPlay"><option value="first">il primo giorno di ogni evento</option><option value="last">l'ultimo giorno di ogni evento</option></select></div></div>
       <div class="tw"><table id="advEvents"></table></div>
       <div class="row" style="margin-top:8px"><button class="btn" id="addEvent">+ Aggiungi evento</button></div>
     </div>
@@ -218,6 +222,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
       <h3>📅 Calendario</h3>
       <div class="tw"><table id="advCal"></table></div>
       <p class="muted">Le gemme di ogni evento sono quelle da spendere in quell'evento (si smette appena la truppa è completa). «Truppa completa» = probabilità di averla finita dopo quell'evento.</p>
+      <p class="muted" id="advPlanNote"></p>
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
         <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="advPlanTyp"></table></div></div>
@@ -252,7 +257,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
   <div class="card" id="s-src">
     <h2>🃏 Fonti di carte</h2>
     <p class="sub">Probabilità nel formato <code>3.5%x1 + 0.5%x2</code> (probabilità × copie). Pool = quante truppe diverse di quella rarità. Traguardi, uno per riga: <code>10: carta mythic x1 scelta</code> (scelta = la stessa truppa che vuoi), <code>25: gemme 500</code>, <code>200: forgia 500</code>. «Fermati a» = dopo quanti giri/carte smettere e ricominciare alla ruota o all'evento successivo (più valori separati da virgola = più proposte).</p>
-    <div class="fields" style="margin-bottom:12px"><div class="field"><label>Durata di un evento (giorni)</label><input id="sEventDays" type="number" min="1"></div></div>
+    <div class="fields" style="margin-bottom:12px"><div class="field"><label>Durata predefinita di un evento (giorni)</label><input id="sEventDays" type="number" min="1"></div></div>
     <div id="srcList"></div>
     <div class="row"><button class="btn" id="addSrc">+ Aggiungi fonte</button></div>
   </div>
@@ -309,7 +314,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <ol>
       <li>In <b>Cosa ho</b> inserisci gemme, pergamene, pietre forgia, livello del QG e le copie della truppa che possiedi.</li>
       <li>In <b>Cosa voglio</b> scegli rarità, livello, quante copie a quel livello e in quanti giorni (oppure «Subito»).</li>
-      <li>Ogni evento dura 7 giorni (si cambia nelle Impostazioni): le gemme guadagnate mentre l'evento è aperto si possono ancora spendere.</li>
+      <li>Ogni evento ha una data di inizio e una di fine (di default 7 giorni dopo). Scegli se fare i conti per giocare il <b>primo giorno</b> (arrivi già carico: contano solo le gemme e gli acquisti fino a quel giorno, quindi al massimo 2 pacchetti fornitura avanzata se giochi oggi) oppure l'<b>ultimo giorno</b> (contano anche le gemme guadagnate e i pacchetti comprati durante l'evento).</li>
       <li>Con Ruota e Asso carte «fermati a 100» le gemme servono un evento alla volta: tra un evento e l'altro (di default 30 giorni, si cambia nelle Impostazioni) accumuli gemme gratis. Il calcolatore mostra il calendario evento per evento e quanto comprare in tutto. Se gli eventi necessari non ci stanno nei giorni che hai indicato, te lo segnala.</li>
       <li>Sotto trovi sempre due ipotesi: <b>se va normalmente</b> e <b>se va male</b>, con quante gemme servono, quante mancano, cosa comprare e quanto costa.</li>
     </ol>
@@ -397,7 +402,7 @@ const DEFAULTS = {
   free: [ {name:"Guerra infinita", daily:400, on:true} ],
   eventDays: 7
 };
-const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false, adv:false, goals:[], events:[], passes:{}};
+const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false, playLast:false, dur:null, adv:false, goals:[], events:[], passes:{}};
 
 const clone = o => JSON.parse(JSON.stringify(o));
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -668,7 +673,7 @@ function buyPlan(G,D=0){
   G=Math.max(0,Math.ceil(G));
   const gp=cfg.gemPacks.filter(p=>p.gems>0&&p.eur>=0);
   let combos=[[]];
-  for(const p of gp){ let cap=Math.ceil(G/p.gems); if(p.perDay>0) cap=Math.min(cap,p.perDay*Math.max(1,D)); if(p.max>0) cap=Math.min(cap,p.max);
+  for(const p of gp){ let cap=Math.ceil(G/p.gems); if(p.perDay>0) cap=Math.min(cap,p.perDay*(Math.max(0,D)+1)); if(p.max>0) cap=Math.min(cap,p.max);
     const n=[]; for(const c of combos) for(let q=0;q<=cap;q++){ n.push(c.concat(q)); if(n.length>20000) break; } combos=n; }
   const memo=new Map(), stoneCost=S=>{ if(!memo.has(S)) memo.set(S,cheapestStones(S)); return memo.get(S); };
   let best=null;
@@ -736,7 +741,7 @@ function renderInputs(){
   $("#wTarget").innerHTML=t;
   $("#wQty").value=ui.qty||1;
   if(ui.dateIso){ const d=Math.round((new Date(ui.dateIso+"T00:00:00")-today())/864e5); ui.days=Math.max(1,d); }
-  $("#wDays").value=ui.days||30; $("#wDate").value=isoDate(addDays(ui.days||30)); $("#wDate").min=isoDate(addDays(1)); $("#wNow").checked=!!ui.now; $("#wDays").disabled=$("#wDate").disabled=!!ui.now;
+  $("#wDays").value=ui.days||30; $("#wDate").value=isoDate(addDays(ui.days||30)); $("#wEnd").value=isoDate(addDays((ui.now?0:(ui.days||30))+evDur())); $("#wPlay").value=ui.playLast?"last":"first"; $("#wDate").min=isoDate(addDays(1)); $("#wNow").checked=!!ui.now; $("#wDays").disabled=$("#wDate").disabled=!!ui.now;
   $("#wDisc").checked=!!ui.disc; $("#discPctLbl").textContent=cfg.discount.pct;
   renderModeOptions();
   renderPasses();
@@ -760,9 +765,11 @@ function renderModeOptions(){
 }
 const bindNum=(sel,key,min=0)=>$(sel).addEventListener("input",e=>{ ui[key]=num(e.target.value,min); saveUi(); recalc(); });
 bindNum("#hGems","gems"); bindNum("#hScrolls","scrolls"); bindNum("#hForge","forge"); bindNum("#wQty","qty",1);
-$("#wNow").onchange=e=>{ ui.now=e.target.checked; $("#wDays").disabled=$("#wDate").disabled=ui.now; saveUi(); recalc(); };
-$("#wDays").addEventListener("input",e=>{ ui.days=num(e.target.value,1); ui.dateIso=""; $("#wDate").value=isoDate(addDays(ui.days)); saveUi(); recalc(); });
-$("#wDate").addEventListener("change",e=>{ if(!e.target.value) return; const d=Math.round((new Date(e.target.value+"T00:00:00")-today())/864e5); ui.days=Math.max(1,d); ui.dateIso=e.target.value; $("#wDays").value=ui.days; saveUi(); recalc(); });
+$("#wNow").onchange=e=>{ ui.now=e.target.checked; $("#wDays").disabled=$("#wDate").disabled=ui.now; $("#wEnd").value=isoDate(addDays((ui.now?0:num(ui.days,1))+evDur())); saveUi(); recalc(); };
+$("#wDays").addEventListener("input",e=>{ ui.days=num(e.target.value,1); ui.dateIso=""; $("#wDate").value=isoDate(addDays(ui.days)); $("#wEnd").value=isoDate(addDays(ui.days+evDur())); saveUi(); recalc(); });
+$("#wEnd").addEventListener("change",e=>{ if(!e.target.value) return; const end=Math.round((new Date(e.target.value+"T00:00:00")-today())/864e5), st=ui.now?0:num(ui.days,1); ui.dur=Math.max(0,end-st); $("#wEnd").value=isoDate(addDays(st+ui.dur)); saveUi(); recalc(); });
+$("#wPlay").onchange=e=>{ ui.playLast=e.target.value==="last"; $("#advPlay").value=e.target.value; saveUi(); recalc(); };
+$("#wDate").addEventListener("change",e=>{ if(!e.target.value) return; const d=Math.round((new Date(e.target.value+"T00:00:00")-today())/864e5); ui.days=Math.max(1,d); ui.dateIso=e.target.value; $("#wDays").value=ui.days; $("#wEnd").value=isoDate(addDays(ui.days+evDur())); saveUi(); recalc(); });
 $("#hHq").onchange=e=>{ ui.hqLevel=+e.target.value; saveUi(); recalc(); };
 $("#hInv").addEventListener("input",e=>{ const l=e.target.dataset.l; if(!l) return; ui.inv[l]=num(e.target.value); saveUi(); recalc(); });
 $("#invReset").onclick=()=>{ ui.inv={}; saveUi(); renderInputs(); recalc(); };
@@ -778,11 +785,15 @@ function recalc(){ clearTimeout(recalcTimer); recalcTimer=setTimeout(recalcNow,8
 // date: l'evento inizia tra D giorni; con le modalità a eventi i successivi arrivano ogni "every" giorni
 let LIMIT=0;
 // giorni dell'evento in cui si possono ancora spendere gemme guadagnate (es. 7 giorni di durata = 6 giorni in più)
-const evDays=()=>Math.max(0,Math.round(num(cfg.eventDays,1))-1);
+const evDur=()=>Math.max(0,Math.round(ui.dur!=null&&ui.dur!==""?num(ui.dur):num(cfg.eventDays,1)));
+// giorni dopo l'inizio in cui si gioca: 0 = primo giorno, durata = ultimo giorno
+const evDays=()=>ui.playLast?Math.max(0,evDur()-1):0;   // l'evento si chiude alla data di fine: ultimo giorno giocabile = fine - 1
+const playTxt=()=>ui.playLast?"l'ultimo giorno dell'evento (il giorno prima della fine)":"il primo giorno dell'evento";
 const today=()=>{ const d=new Date(); d.setHours(0,0,0,0); return d; };
 const addDays=n=>{ const d=today(); d.setDate(d.getDate()+n); return d; };
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const itDate=d=>d.toLocaleDateString("it-IT",{day:"2-digit",month:"2-digit",year:"numeric"});
+const evRange=(d,dur)=>`${d<=0?"oggi":itDate(addDays(d))} → ${itDate(addDays(d+dur))}`;
 const quando=d=>d<=0?"subito":`tra ${gg(d)} (${itDate(addDays(d))})`;
 const lastDay=(r,key)=>LIMIT+(r&&r.stop?(((key==="typ"?r.cycT:r.cycB)||1)-1)*r.every:0);
 const durTxt=r=>{ const a=lastDay(r,"typ"), b=lastDay(r,"bad"); const f=d=>d<=0?"subito":itDate(addDays(d)); return a===b?f(a):`${f(a)} – ${f(b)}`; };
@@ -797,9 +808,9 @@ function eventPlan(row,key,need,D0){
     const used=cards.filter((c,i)=>mask&(1<<i));
     const inc=t=>own+freeAt(t)+used.reduce((s,c)=>s+cardGems(c,t).gems,0), ED=evDays();
     let R=0; sched.forEach(e=>{ R=Math.max(R,e.cum-inc(e.t+ED)); });
-    const bp=buyPlan(Math.ceil(R),Math.max(1,H+ED)); if(!bp) continue;
+    const bp=buyPlan(Math.ceil(R),H+ED); if(!bp) continue;
     const eurC=used.reduce((s,c)=>s+cardGems(c,H+ED).eur,0), tot=eurC+bp.cost;
-    if(!best||tot<best.cost-1e-9) best={cost:tot,free:Math.floor(freeAt(H+ED)),used:used.map(c=>({c,...cardGems(c,H+ED)})),bp,fromCards:0,events:true,H,C,sched,R};
+    if(!best||tot<best.cost-1e-9) best={cost:tot,free:Math.floor(freeAt(H+ED)),used:used.map(c=>({c,...cardGems(c,H+ED)})),bp,fromCards:0,events:true,H,HZ:H+ED,C,sched,R};
   }
   return best;
 }
@@ -811,6 +822,14 @@ function planFor(row,key,D){
 
 // "Carte da girare", "Giri da fare", "Evocazioni da fare"
 function unitAction(r){ const u=(r.unit||"tentativi").toLowerCase(); const v=r.src.type==="board"?"da girare":"da fare"; return u[0].toUpperCase()+u.slice(1)+" "+v; }
+function planNoteTxt(Dp,isEv){
+  const gp=cfg.gemPacks.filter(p=>p.perDay>0).map(p=>`${esc(p.name)}: max ${p.perDay} al giorno`).join(", ");
+  return `ℹ️ Conti fatti per giocare <b>${playTxt()}</b>${isEv?" di ogni evento":` (${Dp<=0?"oggi":itDate(addDays(Dp))})`}. Prima si contano le gemme che hai, quelle gratis (QG, altre entrate, pass già attivi) e quelle dei pass mensili; solo il resto si compra. ${gp?gp+", da oggi fino al giorno in cui giochi.":""}`;
+}
+function tipsHtml(t){
+  const good=t.filter(x=>/class="good"/.test(x)), other=t.filter(x=>!/class="good"/.test(x));
+  return good.join("")+(other.length?`<li class="more"><details><summary>Mostra altri ${other.length} suggeriment${other.length===1?"o":"i"}</summary><ul class="tips" style="margin-top:8px">${other.join("")}</ul></details></li>`:"");
+}
 function recalcNow(){
   planCache.clear();
   if(ui.adv){ advRecalc(); return; }
@@ -818,7 +837,7 @@ function recalcNow(){
   LIMIT=D;
   const who=`truppa <b class="r-${rar}">${RAR_IT[rar]}</b>`;
   const mp=planMerge(ui.inv,target,qty,rar,ui.disc), N=mp.cardsMissing;
-  $("#resTitle").innerHTML=`Obiettivo: <b>${qty}</b> ${qty===1?"copia":"copie"} di ${who} a livello <b>${target}</b>. Evento: <b>${quando(D)}</b>.`;
+  $("#resTitle").innerHTML=`Obiettivo: <b>${qty}</b> ${qty===1?"copia":"copie"} di ${who} a livello <b>${target}</b>. Evento: <b>${evRange(D,evDur())}</b>, conti fatti per giocare <b>${playTxt()}</b>.`;
 
   const rows=extractionRows(N,rar,num(ui.gems));
   rows.forEach(r=>{ const a=planFor(r,"typ",D), b=planFor(r,"bad",D); r.eurT=a?a.cost:Infinity; r.eurB=b?b.cost:Infinity; });
@@ -859,6 +878,7 @@ function recalcNow(){
   }).join("");
   $("#timeWarn").innerHTML="";
 
+  $("#planNote").innerHTML=planNoteTxt(D+evDays(),ev&&N>0);
   renderRiskWarn(chosen,rows,N);
   renderPlan("#planTyp",sc[0].plan,D+evDays(),sc[0].miss);
   renderPlan("#planBad",sc[1].plan,D+evDays(),sc[1].miss);
@@ -898,14 +918,14 @@ function renderRiskWarn(chosen,rows,N){
     <div style="margin-top:6px">👉 Usa ×${m} solo se vuoi girare meno carte e fare prima: non fa risparmiare gemme.</div></div>`;
 }
 function renderPlan(id,plan,D,G){
-  const ev=plan&&plan.events; if(ev) D=plan.H+evDays();
+  const ev=plan&&plan.events; if(ev) D=plan.HZ!=null?plan.HZ:plan.H+evDays();
   if(G==null){ $(id).innerHTML=`<tr><td class="muted">Nessuna fonte disponibile per questa rarità: controlla le Impostazioni.</td></tr>`; return; }
   if(G<=0){ $(id).innerHTML=`<tr><td class="good">Hai già abbastanza gemme 🎉</td></tr>`; return; }
   if(!plan){ $(id).innerHTML=`<tr><td class="muted">Impossibile calcolare: controlla pacchetti e conversioni nelle Impostazioni.</td></tr>`; return; }
   const r=[];
-  if((D>0||ev)&&plan.free>0) r.push([ev?`🏰 Gratis accumulate fino all'ultimo evento (${gg(D)})`:`🏰 Gratis in ${gg(D)}, fino alla fine dell'evento (QG${otherDaily()?" + altre entrate":""}${activeGems(1)?" + pass attivi":""})`, "—", `${fmt(ev?Math.max(0,Math.min(plan.free,G-Math.ceil(plan.R)-plan.used.reduce((a,u)=>a+u.gems,0))):Math.min(plan.free,G))} gemme`, eur(0)]);
+  if((D>0||ev)&&plan.free>0) r.push([ev?`🏰 Gratis accumulate fino all'ultimo evento (${gg(D)})`:`🏰 Gratis da oggi al giorno in cui giochi (${gg(D)}: QG${otherDaily()?" + altre entrate":""}${activeGems(1)?" + pass attivi":""})`, "—", `${fmt(ev?Math.max(0,Math.min(plan.free,G-Math.ceil(plan.R)-plan.used.reduce((a,u)=>a+u.gems,0))):Math.min(plan.free,G))} gemme`, eur(0)]);
   plan.used.filter(u=>u.buys>0).forEach(u=>r.push([`📅 ${esc(u.c.name)}`, `${u.buys}×`, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
-  plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
+  plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}${x.p.perDay?`<div class="muted">max ${x.p.perDay} al giorno × ${gg(D+1)} = ${x.p.perDay*(D+1)} disponibili</div>`:""}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
   plan.bp.r.items.forEach(x=>r.push([`💠 Pacchetto Eternity Stone da ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
   plan.bp.cp.items.forEach(x=>r.push([`🔁 Converti in gioco ${fmt(x.t.stones)} Eternity Stone → ${fmt(x.t.gems)} gemme`, `${x.q}×`, `${fmt(x.t.gems*x.q)} gemme`, "—"]));
   $(id).innerHTML=`<tr><th>Cosa</th><th>Q.tà</th><th>Ottieni</th><th>€</th></tr>`+
@@ -993,7 +1013,7 @@ function renderTips(c){
     add("bad",`Ti mancano fino a <b>${fmt(B.forgeMiss)}</b> pietre forgia per le fusioni.`);
     if(!ui.disc){ const md=planMerge(ui.inv,c.target,c.qty,c.rar,true); if(md.forge<c.mp.forge) add("",`Con l'evento sconto (${cfg.discount.pct}%) ne risparmieresti ${fmt(c.mp.forge-md.forge)}: se non hai fretta, fai le fusioni durante l'evento.`); }
   }
-  $("#tips").innerHTML=t.join("");
+  $("#tips").innerHTML=tipsHtml(t);
 }
 
 /* =====================================================================
@@ -1021,6 +1041,7 @@ $("#hPasses").addEventListener("input",e=>{ const i=e.target.dataset.pl; if(i==n
    ===================================================================== */
 function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 const qtl=(arr,p)=>{ const a=Array.from(arr).sort((x,y)=>x-y); return a.length?a[Math.min(a.length-1,Math.floor(p*(a.length-1)+0.5))]:0; };
+const evDurOf=e=>Math.max(0,Math.round(e.dur!=null?num(e.dur):num(cfg.eventDays,1)));
 const evDaysOf=e=>e.dateIso?Math.max(0,Math.round((new Date(e.dateIso+"T00:00:00")-today())/864e5)):num(e.days);
 let nextId=1;
 function ensureAdvDefaults(){
@@ -1048,13 +1069,14 @@ function renderAdvForms(){
       <div class="row" style="margin-top:8px">${ui.goals.length>1?`<button class="btn" data-delgoal="${g.id}">Elimina truppa</button>`:""}</div>
     </div>`; }).join("");
   const goalOpts=sel=>ui.goals.map(g=>`<option value="${g.id}" ${+sel===g.id?"selected":""}>${esc(g.name)}</option>`).join("");
-  $("#advEvents").innerHTML=`<tr><th>Evento</th><th>Truppa</th><th>Inizia tra (giorni)</th><th>oppure il</th><th>Come giocarlo</th><th>×5</th><th></th></tr>`+
+  $("#advEvents").innerHTML=`<tr><th>Evento</th><th>Truppa</th><th>Inizia tra (giorni)</th><th>oppure il</th><th>Finisce il</th><th>Come giocarlo</th><th>×5</th><th></th></tr>`+
     ui.events.map(e=>{ const src=cfg.sources[e.src]||cfg.sources[0]; const modes=srcModes(src); if(e.stop==null||!modes.some(m=>m.v===e.stop)) e.stop=modes[0].v; const d=evDaysOf(e);
       return `<tr>
         <td><select data-e="${e.id}" data-k="src">${cfg.sources.map((s,i)=>s.on?`<option value="${i}" ${+e.src===i?"selected":""}>${esc(s.name)}</option>`:"").join("")}</select></td>
         <td><select data-e="${e.id}" data-k="goal">${goalOpts(e.goal)}</select></td>
         <td><input type="number" min="0" data-e="${e.id}" data-k="days" value="${d}" style="max-width:90px"></td>
         <td><input type="date" data-e="${e.id}" data-k="dateIso" value="${isoDate(addDays(d))}" min="${isoDate(today())}"></td>
+        <td><input type="date" data-e="${e.id}" data-k="end" value="${isoDate(addDays(d+evDurOf(e)))}" min="${isoDate(addDays(d))}"></td>
         <td><select data-e="${e.id}" data-k="stop">${modes.map(m=>`<option value="${m.v}" ${m.v===e.stop?"selected":""}>${esc(m.l)}</option>`).join("")}</select></td>
         <td>${src.type==="board"&&(+src.multi||1)>1?`<input type="checkbox" data-e="${e.id}" data-k="x5" ${e.x5?"checked":""}>`:"—"}</td>
         <td><button class="btn" data-delev="${e.id}">✕</button></td></tr>`; }).join("");
@@ -1075,6 +1097,7 @@ $("#advEvents").addEventListener("change",e=>{ const ev=ui.events.find(x=>x.id==
   else if(k==="goal") ev.goal=+v;
   else if(k==="days"){ ev.days=num(v); ev.dateIso=""; }
   else if(k==="dateIso"){ if(v){ ev.dateIso=v; } }
+  else if(k==="end"){ if(v){ const end=Math.round((new Date(v+"T00:00:00")-today())/864e5); ev.dur=Math.max(0,end-evDaysOf(ev)); } }
   else if(k==="stop") ev.stop=+v;
   else if(k==="x5") ev.x5=e.target.checked;
   saveUi(); renderAdvForms(); recalc(); });
@@ -1130,27 +1153,27 @@ function simulateAdv(goals,evs,runs){
 }
 // piano di spesa con le gemme che servono a ogni data (cumulative)
 function cashPlan(sched){
-  const own=num(ui.gems), ED=evDays(), H=sched.length?sched[sched.length-1].t:0;
+  const own=num(ui.gems), ED=0, H=sched.reduce((m,e)=>Math.max(m,e.tp),0);
   const cards=cfg.cards.filter(c=>c.on&&c.days>0); let best=null;
   for(let mask=0;mask<(1<<cards.length);mask++){
     const used=cards.filter((c,i)=>mask&(1<<i));
     const inc=t=>own+freeAt(t)+used.reduce((s,c)=>s+cardGems(c,t).gems,0);
-    let R=0; sched.forEach(e=>{ R=Math.max(R,e.cum-inc(e.t+ED)); });
-    const bp=buyPlan(Math.ceil(R),Math.max(1,H+ED)); if(!bp) continue;
+    let R=0; sched.forEach(e=>{ R=Math.max(R,e.cum-inc(e.tp)); });
+    const bp=buyPlan(Math.ceil(R),H); if(!bp) continue;
     const eurC=used.reduce((s,c)=>s+cardGems(c,H+ED).eur,0), tot=eurC+bp.cost;
-    if(!best||tot<best.cost-1e-9) best={cost:tot,free:Math.floor(freeAt(H+ED)),used:used.map(c=>({c,...cardGems(c,H+ED)})),bp,events:true,H,R,sched};
+    if(!best||tot<best.cost-1e-9) best={cost:tot,free:Math.floor(freeAt(H+ED)),used:used.map(c=>({c,...cardGems(c,H+ED)})),bp,events:true,H,HZ:H,R,sched};
   }
   return best;
 }
 function advRecalc(){
   ensureAdvDefaults();
   const goals=ui.goals.map(g=>{ const mp=planMerge(g.inv||{},Math.min(+g.target||2,cfg.maxLevel),Math.max(1,g.qty|0),g.rarity,ui.disc); return {...g,mp,N:mp.cardsMissing}; });
-  const evs=ui.events.map((e,idx)=>{ const gi=ui.goals.findIndex(g=>g.id===e.goal); const g=goals[gi<0?0:gi]; return {e,idx,gi:gi<0?0:gi,t:evDaysOf(e),p:prepEvent(e,g)}; })
+  const evs=ui.events.map((e,idx)=>{ const gi=ui.goals.findIndex(g=>g.id===e.goal); const g=goals[gi<0?0:gi]; return {e,idx,gi:gi<0?0:gi,t:evDaysOf(e),dur:evDurOf(e),p:prepEvent(e,g)}; })
     .sort((a,b)=>a.t-b.t||a.idx-b.idx);
   const runs=Math.max(500,Math.min(3000,Math.floor(4e6/Math.max(1,goals.reduce((s,g)=>s+g.N,0)*40))));
   const S=simulateAdv(goals,evs,runs);
   const sc=[["typ",.5],["bad",.9]].map(([key,p])=>{
-    const sched=evs.map((ev,i)=>({t:ev.t,cum:qtl(S.cum[i],p)}));
+    const sched=evs.map((ev,i)=>({t:ev.t,tp:ev.t+(ui.playLast?Math.max(0,ev.dur-1):0),cum:qtl(S.cum[i],p)}));
     const plan=cashPlan(sched); const need=qtl(S.tot,p);
     return {key,p,need,plan};
   });
@@ -1165,10 +1188,11 @@ function advRecalc(){
         <div>Spesa minima per arrivare carico</div><div class="big">${s.plan?eur(s.plan.cost):"—"}</div>
       </div></div>`; }).join("");
   // calendario
-  $("#advCal").innerHTML=`<tr><th>Quando</th><th>Evento</th><th>Truppa</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Gemme gratis accumulate</th><th>Truppa completa</th></tr>`+
+  $("#advCal").innerHTML=`<tr><th>Dal → al</th><th>Evento</th><th>Truppa</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Gemme gratis accumulate</th><th>Truppa completa</th></tr>`+
     evs.map((ev,i)=>{ const g=goals[ev.gi], src=ev.p.src, mode=stopLabel(src,ev.p.stop).slice(3)||"finché serve";
-      return `<tr><td>${quando(ev.t)}</td><td class="l">${esc(src.name)} · ${esc(mode)}${ev.e.x5&&src.type==="board"?" · ×"+(src.multi||5):""}${ev.p.ok?"":` <span class="bad">(non dà truppe ${RAR_IT[g.rarity]})</span>`}</td><td>${esc(g.name)}</td><td>${fmt(qtl(S.spend[i],.5))}</td><td>${fmt(qtl(S.spend[i],.9))}</td><td>${fmt(num(ui.gems)+freeAt(ev.t))}</td><td class="${S.done[i]>=.9?"good":S.done[i]<.5?"bad":""}">${fmt(S.done[i]*100,0)}%</td></tr>`; }).join("")+
+      return `<tr><td>${evRange(ev.t,ev.dur)}</td><td class="l">${esc(src.name)} · ${esc(mode)}${ev.e.x5&&src.type==="board"?" · ×"+(src.multi||5):""}${ev.p.ok?"":` <span class="bad">(non dà truppe ${RAR_IT[g.rarity]})</span>`}</td><td>${esc(g.name)}</td><td>${fmt(qtl(S.spend[i],.5))}</td><td>${fmt(qtl(S.spend[i],.9))}</td><td>${fmt(num(ui.gems)+freeAt(ev.t))}</td><td class="${S.done[i]>=.9?"good":S.done[i]<.5?"bad":""}">${fmt(S.done[i]*100,0)}%</td></tr>`; }).join("")+
     `<tr class="best"><td colspan="3">Totale</td><td>${fmt(sc[0].need)}</td><td>${fmt(sc[1].need)}</td><td></td><td>${fmt(S.allDone*100,0)}% tutte</td></tr>`;
+  $("#advPlanNote").innerHTML=planNoteTxt(0,true);
   renderPlan("#advPlanTyp",sc[0].plan,0,Math.max(1,sc[0].need-num(ui.gems)));
   renderPlan("#advPlanBad",sc[1].plan,0,Math.max(1,sc[1].need-num(ui.gems)));
   if(sc[0].plan&&sc[0].plan.R<=0) $("#advPlanTyp").innerHTML=`<tr><td class="good">Bastano le gemme gratis e quelle che hai: non serve comprare niente.</td></tr>`;
@@ -1189,7 +1213,7 @@ function advRecalc(){
   if(evs.some(e=>e.e.x5&&e.p.src.type==="board")) add("",`Asso carte ×5: non fa risparmiare gemme ma rende il risultato più variabile (un tabellone sfortunato costa fino a ${fmt((+cfg.sources.find(s=>s.type==="board").cards||12)*(+cfg.sources.find(s=>s.type==="board").cost||250)*5)} gemme).`);
   if(Object.values(ui.passes||{}).some(v=>v>0)) add("","I pass già attivi sono contati: le gemme giornaliere fino alla scadenza sono gratis, il rinnovo si paga solo dopo.");
   if(forgeMiss>0) add("bad",`Ti mancano circa <b>${fmt(forgeMiss)}</b> pietre forgia per tutte le fusioni.`);
-  $("#advTips").innerHTML=t.join("");
+  $("#advTips").innerHTML=tipsHtml(t);
 }
 function applyAdvVisibility(){
   const on=!!ui.adv;
@@ -1199,8 +1223,10 @@ function applyAdvVisibility(){
   $("#cardRes").style.display=on?"none":"";
   $("#invBlock").style.display=on?"none":"";
   $("#calcCols").classList.toggle("one",on);
+  $("#advPlay").value=ui.playLast?"last":"first";
   if(on) renderAdvForms();
 }
+$("#advPlay").onchange=e=>{ ui.playLast=e.target.value==="last"; $("#wPlay").value=e.target.value; saveUi(); recalc(); };
 $("#advOn").onchange=e=>{ ui.adv=e.target.checked; saveUi(); applyAdvVisibility(); recalc(); };
 
 const ratesToStr=a=>(a||[]).map(e=>`${+(e.p*100).toFixed(4)}%x${e.c}`).join(" + ");
