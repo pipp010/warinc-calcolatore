@@ -101,7 +101,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.5 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.6 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -138,6 +138,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
         <div class="field"><label>Entro quanti giorni</label>
           <div class="daysbox"><input id="wDays" type="number" min="1"><label class="check"><input type="checkbox" id="wNow"> Subito</label></div></div>
         <div class="field"><label>Modalità di estrazione</label><select id="wMode"></select></div>
+        <div class="field" id="x5Field" style="display:none"><label class="check"><input type="checkbox" id="wX5"> Estrazione ×<span id="x5Lbl">5</span></label></div>
       </div>
       <div class="row" style="margin-top:14px">
         <label class="check"><input type="checkbox" id="wDisc"> Evento sconto pietre forgia attivo (<span id="discPctLbl">15</span>%)</label>
@@ -268,7 +269,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <h2 style="margin-top:18px">Ruota e Asso carte: fermati ai traguardi</h2>
     <ul>
       <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. La proposta «100+ giri (a oltranza)» continua sulla stessa ruota senza fermarsi: conviene solo se ti servono le pietre forgia del traguardo 200.</li>
-      <li>L'Asso carte dà un mitico in più a 10, 30, 60 e 100 carte girate: anche qui conviene fermarsi a 100. Le carte girate a ×5 contano 5.</li>
+      <li>L'Asso carte dà un mitico in più a 10, 30, 60 e 100 carte girate: anche qui conviene fermarsi a 100 («Asso carte · 100 carte»); «100+ carte (a oltranza)» continua senza fermarsi. Scegliendo l'Asso carte compare la casella «Estrazione ×5»: le carte girate a ×5 contano 5, ma il risultato è più rischioso.</li>
     </ul>
     <h2 style="margin-top:18px">Da verificare in gioco</h2>
     <ul>
@@ -291,7 +292,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 13,
+  ver: 14,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -312,7 +313,7 @@ const DEFAULTS = {
       rates:{mythic:[{p:.12,c:1}],legendary:[],epic:[],rare:[],common:[]},
       pool:{mythic:3,legendary:1,epic:1,rare:1,common:1},
       milestones:"", note:"3 mitici al 4% ciascuno (12% in tutto). Prima si usano le pergamene." },
-    { type:"board", name:"Asso carte", unit:"carte", cost:250, cards:12, hits:1, multi:5, on:true, start:0, stops:"100",
+    { type:"board", name:"Asso carte", unit:"carte", cost:250, cards:12, hits:1, multi:5, on:true, start:0, stops:"100", continuous:true,
       milestones:MS_ASSO,
       note:"12 carte coperte, 1 mitico. Trovato il mitico il tabellone si rimescola. ×5: costo, premio e traguardi ×5." }
   ],
@@ -335,7 +336,7 @@ const DEFAULTS = {
   hq: { rates:{5:16, 6:18, 7:20} },
   free: [ {name:"Guerra infinita", daily:400, on:true} ]
 };
-const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false};
+const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false};
 
 const clone = o => JSON.parse(JSON.stringify(o));
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -367,7 +368,8 @@ function loadCfg(raw){
   delete c.freeDaily; delete c.funds;
   if(v<12) c.sources.forEach(x=>{ if(x.name==="Ruota"){ x.stops="100"; x.continuous=true; } });
   if(v<13) (c.gemPacks||[]).forEach(p=>{ if(p.name==="Pacchetto in gioco"){ p.name="Pacchetto fornitura avanzata"; p.extra="120.000 monete"; } });
-  c.ver=13;
+  if(v<14) c.sources.forEach(x=>{ if(x.type==="board"){ x.stops="100"; x.continuous=true; } });
+  c.ver=14;
   return c;
 }
 function loadUi(){
@@ -532,13 +534,13 @@ function extractionRows(N,rar,owned){
     const variants=stopVariants(src), unit=src.unit||"tentativi";
     if(src.type==="board"){
       if(rar!=="mythic") return;
-      const ms=[false]; if((+src.multi||1)>1&&N>=(+src.multi)) ms.push(true);
+      const ms=[useX5()&&boardMode()===src&&(+src.multi||1)>1&&N>=(+src.multi)];
       variants.forEach(stop=>ms.forEach(multi=>{
         const r=solveBoard(src,N,multi,stop), u=+src.cost||0;
         const uT=pctl(r.cdf,.5), uB=pctl(r.cdf,.9); if(uT==null) return;
         const pOwned=r.cdf[Math.min(r.cdf.length-1,Math.floor(owned/(u||1)))]||0;
-        rows.push({id:`${si}${multi?"m":""}@${stop}`, src, stop, multi, unit,
-          label:`${src.name} ×${multi?r.m:1}`+stopLabel(src,stop),
+        rows.push({id:`${si}@${stop}`, src, stop, multi, unit,
+          label:`${src.name}${multi?" ×"+r.m:""}`+stopLabel(src,stop),
           mean:meanOf(r.cdf)*u, typ:uT*u, bad:uB*u, nT:uT, nB:uB,
           cycT:stop?Math.ceil(uT/stop):null, cycB:stop?Math.ceil(uB/stop):null, fsT:0, fsB:0, pOwned});
       }));
@@ -665,17 +667,21 @@ function renderInputs(){
   $("#wDisc").checked=!!ui.disc; $("#discPctLbl").textContent=cfg.discount.pct;
   renderModeOptions();
 }
+// sorgente tabellone scelta a mano nella modalità (serve per la casella ×5)
+function boardMode(){ const m=String(ui.mode).match(/^(\d+)@/); const s=m&&cfg.sources[+m[1]]; return s&&s.type==="board"?s:null; }
+const useX5=()=>!!(ui.x5&&boardMode());
+function updateX5Field(){ const b=boardMode(); $("#x5Field").style.display=b?"":"none"; $("#x5Lbl").textContent=b?(b.multi||5):5; $("#wX5").checked=!!ui.x5; }
 function renderModeOptions(){
   const opts=[`<option value="auto">Automatica (la più conveniente)</option>`];
   cfg.sources.forEach((s,i)=>{ if(!s.on) return;
     const vs=stopVariants(s);
     vs.forEach(st=>{
       const suf=stopLabel(s,st);
-      if(s.type==="board"){ opts.push(`<option value="${i}@${st}">${esc(s.name)} ×1${suf}</option>`); if((+s.multi||1)>1) opts.push(`<option value="${i}m@${st}">${esc(s.name)} ×${s.multi}${suf}</option>`); }
-      else opts.push(`<option value="${i}@${st}">${esc(s.name)}${suf}</option>`);
+      opts.push(`<option value="${i}@${st}">${esc(s.name)}${suf}</option>`);
     }); });
   $("#wMode").innerHTML=opts.join("");
   $("#wMode").value=ui.mode; if($("#wMode").value!==String(ui.mode)){ ui.mode="auto"; $("#wMode").value="auto"; }
+  updateX5Field();
 }
 const bindNum=(sel,key,min=0)=>$(sel).addEventListener("input",e=>{ ui[key]=num(e.target.value,min); saveUi(); recalc(); });
 bindNum("#hGems","gems"); bindNum("#hScrolls","scrolls"); bindNum("#hForge","forge"); bindNum("#wDays","days",1); bindNum("#wQty","qty",1);
@@ -686,7 +692,8 @@ $("#invReset").onclick=()=>{ ui.inv={}; saveUi(); renderInputs(); recalc(); };
 $("#wName").oninput=e=>{ ui.name=e.target.value; saveUi(); recalc(); };
 $("#wRarity").onchange=e=>{ ui.rarity=e.target.value; saveUi(); recalc(); };
 $("#wTarget").onchange=e=>{ ui.target=+e.target.value; saveUi(); recalc(); };
-$("#wMode").onchange=e=>{ ui.mode=e.target.value; saveUi(); recalc(); };
+$("#wMode").onchange=e=>{ ui.mode=e.target.value; updateX5Field(); saveUi(); recalc(); };
+$("#wX5").onchange=e=>{ ui.x5=e.target.checked; saveUi(); recalc(); };
 $("#wDisc").onchange=e=>{ ui.disc=e.target.checked; saveUi(); recalc(); };
 
 let recalcTimer=null;
@@ -744,7 +751,7 @@ function renderRiskWarn(chosen,rows,N){
   const el=$("#riskWarn");
   if(!(N>0&&chosen&&chosen.multi)){ el.innerHTML=""; return; }
   const src=chosen.src, m=+src.multi||5, M=+src.cards||12, worst=M*src.cost*m;
-  const one=rows.find(r=>r.src===src&&!r.multi&&r.stop===chosen.stop);
+  const r1=solveBoard(src,N,false,chosen.stop), b1=pctl(r1.cdf,.9), one=b1==null?null:{bad:b1*src.cost};
   el.innerHTML=`<div class="warn big"><b>⚠️ Attenzione: ${esc(src.name)} ×${m} è più rischioso del ×1.</b>
     <ul>
       <li><b>In media costa uguale:</b> ogni carta girata costa ${m} volte tanto ma il mitico vale ${m} copie, e anche per i traguardi conta ${m}.</li>
@@ -901,6 +908,7 @@ function boardSrcHtml(s,i){
       <div class="field"><label>Carte col mitico</label><input type="number" min="1" data-s="${i}" data-k="hits" value="${s.hits}"></div>
       <div class="field"><label>Moltiplicatore (costo, premio, traguardi)</label><input type="number" min="1" data-s="${i}" data-k="multi" value="${s.multi}"></div>
       <div class="field"><label>Fermati a (carte girate)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="continuous" ${s.continuous?"checked":""}> Proponi anche «a oltranza»</label></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
     </div>
     <p class="muted">In media servono <b>${fmt(mf,2)}</b> carte per trovare il mitico → ${fmt(mf*s.cost)} gemme a copia senza traguardi.</p>
