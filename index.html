@@ -47,6 +47,9 @@ section.page{display:none}section.page.on{display:block}
 .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.3}
 input,select,textarea{width:100%;background:var(--input);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-height:38px}
 input:disabled{opacity:.45}
+:root[data-theme="dark"] input,:root[data-theme="dark"] select{color-scheme:dark}
+:root[data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.9;cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) input,:root:not([data-theme="light"]) select{color-scheme:dark}:root:not([data-theme="light"]) input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.9;cursor:pointer}}
 textarea{font-family:ui-monospace,Consolas,monospace;font-size:13px}
 input[type=checkbox]{width:18px;height:18px;min-height:0;accent-color:var(--accent);vertical-align:middle;flex:none}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
@@ -106,7 +109,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.3 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.4 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -349,7 +352,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 16,
+  ver: 17,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -387,8 +390,8 @@ const DEFAULTS = {
   conv: [ {stones:100, gems:1000}, {stones:500, gems:5000}, {stones:1000, gems:12000} ],
   gemPacks: [ {name:"Pacchetto fornitura avanzata", eur:5.49, gems:1000, perDay:2, max:0, extra:"120.000 monete"} ],
   cards: [
-    {name:"Pass mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
-    {name:"Carta mensile (avanzata)", eur:13.99, upfront:2000, daily:320, days:30, on:true}
+    {name:"Pass mensile base", eur:4.99, upfront:600, daily:100, days:30, on:true},
+    {name:"Pass mensile avanzato", eur:13.99, upfront:2000, daily:320, days:30, on:true}
   ],
   hq: { rates:{5:16, 6:18, 7:20} },
   free: [ {name:"Guerra infinita", daily:400, on:true} ],
@@ -430,12 +433,15 @@ function loadCfg(raw){
   if(v<15) (c.cards||[]).forEach(x=>{ if(x.name==="Carta mensile gemme") x.name="Pass mensile gemme"; });
   c.sources.forEach(x=>{ if(/d/.test(String(x.stops||""))&&!(x.every>0)) x.every=30; });
   if(!(c.eventDays>0)) c.eventDays=7;
-  c.ver=16;
+  const PASS_REN={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
+  (c.cards||[]).forEach(x=>{ if(PASS_REN[x.name]) x.name=PASS_REN[x.name]; });
+  c.ver=17;
   return c;
 }
+const PASS_REN_UI={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
 function loadUi(){
   const u=clone(UI_DEFAULTS);
-  try{ const s=lsGet(LS_KEY+"-ui2"); if(s){ const o=JSON.parse(s); Object.assign(u,o); if(o.now==null){ u.now=false; if(!o.days) u.days=30; } delete u.risk; return u; } }catch(e){}
+  try{ const s=lsGet(LS_KEY+"-ui2"); if(s){ const o=JSON.parse(s); Object.assign(u,o); if(u.passes) Object.keys(u.passes).forEach(k=>{ if(PASS_REN_UI[k]){ u.passes[PASS_REN_UI[k]]=u.passes[k]; delete u.passes[k]; } }); if(o.now==null){ u.now=false; if(!o.days) u.days=30; } delete u.risk; return u; } }catch(e){}
   try{ const o=JSON.parse(lsGet(LS_KEY+"-ui")||"null"); if(o){ ["inv","name","rarity","target","scrolls"].forEach(k=>{ if(o[k]!=null) u[k]=o[k]; }); if(o.eurOwned) u.gems=o.eurOwned; } }catch(e){}
   return u;
 }
@@ -803,6 +809,8 @@ function planFor(row,key,D){
   return row.stop? eventPlan(row,key,need,D) : spendPlan(Math.max(0,need-num(ui.gems)),D+evDays());
 }
 
+// "Carte da girare", "Giri da fare", "Evocazioni da fare"
+function unitAction(r){ const u=(r.unit||"tentativi").toLowerCase(); const v=r.src.type==="board"?"da girare":"da fare"; return u[0].toUpperCase()+u.slice(1)+" "+v; }
 function recalcNow(){
   planCache.clear();
   if(ui.adv){ advRecalc(); return; }
@@ -839,10 +847,10 @@ function recalcNow(){
   $("#summary").innerHTML=sc.map(s=>{
     const ok=s.key==="typ";
     const cyc=ev&&N>0?`<div>${nomeEv} da fare (${stopLabel(chosen.src,chosen.stop).slice(3)})</div><div>${fmt(s.cyc)}</div><div>${nomeEv==="Ruote"?"Ultima ruota":"Ultimo evento"}</div><div>${s.last<=0?"subito":itDate(addDays(s.last))}</div>`
-      :(s.n!=null&&N>0&&chosen?`<div>${chosen.unit?chosen.unit[0].toUpperCase()+chosen.unit.slice(1):"Tentativi"}</div><div>${fmt(s.n)}</div>`:"");
+      :(s.n!=null&&N>0&&chosen?`<div>${unitAction(chosen)}${chosen.multi?" (a ×"+(chosen.src.multi||5)+" ogni carta vale "+(chosen.src.multi||5)+")":""}</div><div>${fmt(chosen.multi?Math.round(s.n/(+chosen.src.multi||5)):s.n)}</div>`:"");
     const buy=ev&&N>0?(s.plan?Math.ceil(s.plan.R):null):s.miss;
     return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"🙂 Se va normalmente":"😬 Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
-      <div class="kv">${cyc}
+      <div class="kv"><div>Copie L1 da ottenere</div><div>${fmt(N)}</div>${cyc}
         <div>Gemme da spendere in tutto</div><div>${fmt(s.need)}</div>
         <div>${ev&&N>0?"Gemme che non arrivano da gratis/pass":"Gemme che ti mancano oggi"}</div><div class="${buy>0?"bad":"good"}">${fmt(buy)}</div>
         <div>Pietre forgia mancanti${s.fsGot?` (dopo le ${fmt(s.fsGot)} della ruota)`:""}</div><div class="${s.forgeMiss>0?"bad":"good"}">${fmt(s.forgeMiss)}</div>
@@ -1001,7 +1009,7 @@ const freeAt=t=>freeGems(t)+activeGems(t);
 function renderPasses(){
   $("#hPasses").innerHTML=cfg.cards.map((c,i)=>{ const l=passLeft(c); return `<div class="field"><label>${esc(c.name)}</label>
     <div class="daysbox"><label class="check"><input type="checkbox" data-pa="${i}" ${l>0?"checked":""}> già attivo, scade tra</label>
-    <input type="number" min="1" max="${c.days}" data-pl="${i}" value="${l||""}" style="max-width:80px" ${l>0?"":"disabled"}><span class="muted">giorni</span></div></div>`; }).join("");
+    <input type="number" min="1" max="${c.days}" data-pl="${i}" value="${l||""}" style="width:96px;flex:none" ${l>0?"":"disabled"}><span class="muted">giorni</span></div></div>`; }).join("");
 }
 $("#hPasses").addEventListener("change",e=>{ const i=e.target.dataset.pa; if(i==null) return; const c=cfg.cards[i]; ui.passes=ui.passes||{};
   ui.passes[c.name]=e.target.checked?c.days:0; saveUi(); renderPasses(); recalc(); });
