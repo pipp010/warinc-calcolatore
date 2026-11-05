@@ -53,7 +53,25 @@ input:disabled{opacity:.45}
 textarea{font-family:ui-monospace,Consolas,monospace;font-size:13px}
 input[type=checkbox]{width:18px;height:18px;min-height:0;accent-color:var(--accent);vertical-align:middle;flex:none}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
-.inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.inv{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+.g2,.g3{display:grid;gap:12px;align-items:end}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2 .field label,.g3 .field label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sect{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.card .sect h3{margin:0 0 10px}
+.secthead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.card .secthead h3{margin:0}
+.secthead .check{min-height:0;font-size:13px}
+.btn.small{padding:4px 10px;font-size:13px}
+.passlist{display:grid;gap:8px}
+.passrow{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+.passrow .check{flex:1;min-height:0;font-weight:600}
+.passrow .when{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);white-space:nowrap}
+.passrow .when input{width:70px;text-align:center;min-height:32px;padding:4px 6px}
+.passrow.off .when{opacity:.45}
+.checks{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:10px}
+@media (max-width:560px){.g3{grid-template-columns:1fr}.inv{grid-template-columns:repeat(5,minmax(0,1fr))}.passrow{flex-wrap:wrap}}
 .inv .field label{text-align:center;margin-bottom:2px}
 .inv input{text-align:center;padding:6px}
 .check{display:flex !important;gap:8px;align-items:center;font-size:14px;color:var(--ink) !important;min-height:38px;margin:0 !important;cursor:pointer}
@@ -111,7 +129,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.5</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.6</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -131,35 +149,45 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <div class="card">
       <h2><span class="step">1</span> Cosa ho</h2>
       <p class="sub">Le tue risorse attuali.</p>
-      <div class="fields">
+      <div class="g2">
         <div class="field"><label>Gemme</label><input id="hGems" type="number" min="0" placeholder="0"></div>
         <div class="field"><label>Pergamene (Evoc. limitata)</label><input id="hScrolls" type="number" min="0" placeholder="0"></div>
         <div class="field"><label>Pietre forgia</label><input id="hForge" type="number" min="0" placeholder="0"></div>
         <div class="field"><label>Livello Quartier generale</label><select id="hHq"></select></div>
       </div>
-      <h3>Pass mensili già attivi</h3>
-      <div class="fields" id="hPasses"></div>
-      <div id="invBlock">
-      <h3>Copie della truppa già possedute, per livello</h3>
-      <div class="inv" id="hInv"></div>
-      <div class="row" style="margin-top:10px"><button class="btn" id="invReset">Azzera copie</button></div>
+      <div class="sect">
+        <h3>Pass mensili già attivi</h3>
+        <div class="passlist" id="hPasses"></div>
+      </div>
+      <div class="sect" id="invBlock">
+        <div class="secthead"><h3>Copie della truppa già possedute</h3><button class="btn small" id="invReset">Azzera</button></div>
+        <div class="inv" id="hInv"></div>
       </div>
     </div>
     <div class="card" id="cardWant">
       <h2><span class="step">2</span> Cosa voglio</h2>
-      <p class="sub">L'obiettivo e i tempi.</p>
-      <div class="fields">
+      <p class="sub">L'obiettivo, l'evento e come giocarlo.</p>
+      <div class="g3">
         <div class="field"><label>Rarità</label><select id="wRarity"></select></div>
         <div class="field"><label>Livello da raggiungere</label><select id="wTarget"></select></div>
-        <div class="field"><label>Quante copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
-        <div class="field wide"><label>Quando inizia l'evento a cui vuoi arrivare carico</label>
-          <div class="daysbox"><input id="wDays" type="number" min="1" style="max-width:110px"><span class="muted">giorni, oppure il</span><input id="wDate" type="date" style="max-width:170px"><label class="check"><input type="checkbox" id="wNow"> Subito</label><span class="muted">· finisce il</span><input id="wEnd" type="date" style="max-width:170px"></div></div>
-        <div class="field"><label>Fai i conti per giocare</label><select id="wPlay"><option value="first">il primo giorno dell'evento</option><option value="last">l'ultimo giorno dell'evento</option></select></div>
-        <div class="field"><label>Modalità di estrazione</label><select id="wMode"></select></div>
-        <div class="field" id="x5Field" style="display:none"><label class="check"><input type="checkbox" id="wX5"> Estrazione ×<span id="x5Lbl">5</span></label></div>
+        <div class="field"><label>Copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
       </div>
-      <div class="row" style="margin-top:14px">
-        <label class="check"><input type="checkbox" id="wDisc"> Evento sconto pietre forgia attivo (<span id="discPctLbl">15</span>%)</label>
+      <div class="sect">
+        <div class="secthead"><h3>Evento</h3><label class="check"><input type="checkbox" id="wNow"> Già iniziato (subito)</label></div>
+        <div class="g2">
+          <div class="field"><label>Inizia tra (giorni)</label><input id="wDays" type="number" min="1"></div>
+          <div class="field"><label>oppure il</label><input id="wDate" type="date"></div>
+          <div class="field"><label>Finisce il</label><input id="wEnd" type="date"></div>
+          <div class="field"><label>Fai i conti per giocare</label><select id="wPlay"><option value="first">il primo giorno</option><option value="last">l'ultimo giorno</option></select></div>
+        </div>
+      </div>
+      <div class="sect">
+        <h3>Estrazione</h3>
+        <div class="field"><label>Modalità di estrazione</label><select id="wMode"></select></div>
+        <div class="checks">
+          <span id="x5Field" style="display:none"><label class="check"><input type="checkbox" id="wX5"> Estrazione ×<span id="x5Lbl">5</span></label></span>
+          <label class="check"><input type="checkbox" id="wDisc"> Evento sconto pietre forgia (<span id="discPctLbl">15</span>%)</label>
+        </div>
       </div>
     </div>
   </div>
@@ -1027,9 +1055,9 @@ const passLeft=c=>num((ui.passes||{})[c.name]);
 const activeGems=t=>cfg.cards.reduce((s,c)=>s+(passLeft(c)>0?Math.min(Math.max(0,t),passLeft(c))*c.daily:0),0);
 const freeAt=t=>freeGems(t)+activeGems(t);
 function renderPasses(){
-  $("#hPasses").innerHTML=cfg.cards.map((c,i)=>{ const l=passLeft(c); return `<div class="field"><label>${esc(c.name)}</label>
-    <div class="daysbox"><label class="check"><input type="checkbox" data-pa="${i}" ${l>0?"checked":""}> già attivo, scade tra</label>
-    <input type="number" min="1" max="${c.days}" data-pl="${i}" value="${l||""}" style="width:96px;flex:none" ${l>0?"":"disabled"}><span class="muted">giorni</span></div></div>`; }).join("");
+  $("#hPasses").innerHTML=cfg.cards.map((c,i)=>{ const l=passLeft(c); return `<div class="passrow ${l>0?"":"off"}">
+    <label class="check"><input type="checkbox" data-pa="${i}" ${l>0?"checked":""}> ${esc(c.name)}</label>
+    <span class="when">scade tra <input type="number" min="1" max="${c.days}" data-pl="${i}" value="${l||""}" ${l>0?"":"disabled"}> giorni</span></div>`; }).join("");
 }
 $("#hPasses").addEventListener("change",e=>{ const i=e.target.dataset.pa; if(i==null) return; const c=cfg.cards[i]; ui.passes=ui.passes||{};
   ui.passes[c.name]=e.target.checked?c.days:0; saveUi(); renderPasses(); recalc(); });
