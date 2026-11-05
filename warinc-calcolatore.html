@@ -210,7 +210,7 @@ details.box2{border-radius:14px;background:var(--panel)}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v3.2</small></h1>
+  <h1>War Inc · Calcolatore <small>v3.3</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -286,13 +286,13 @@ details.box2{border-radius:14px;background:var(--panel)}
 
     <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
-      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div></div>
-      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div></div>
+      <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div></div>
+      <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div></div>
     </div>
     <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
     <div class="cols">
-      <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="flowTyp"></table></div></div>
-      <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="flowBad"></table></div></div>
+      <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="flowTyp"></table></div></div>
+      <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="flowBad"></table></div></div>
     </div>
     <div id="planHow"></div>
     <p class="muted" id="planNote"></p>
@@ -340,13 +340,13 @@ details.box2{border-radius:14px;background:var(--panel)}
       <p class="muted" id="advPlanNote"></p>
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
-        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div></div>
-        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div></div>
+        <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div></div>
+        <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div></div>
       </div>
       <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
       <div class="cols">
-        <div><div class="scenhead ok">🙂 Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
-        <div><div class="scenhead ko">😬 Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
+        <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
+        <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
       </div>
       <div id="advPlanHow"></div>
       <h3>🎯 Truppe</h3>
@@ -983,7 +983,7 @@ function recalcNow(){
     const cyc=ev&&N>0?`<div>${nomeEv} da fare (${stopLabel(chosen.src,chosen.stop).slice(3)})</div><div>${fmt(s.cyc)}</div><div>${nomeEv==="Ruote"?"Ultima ruota":"Ultimo evento"}</div><div>${s.last<=0?"subito":itDate(addDays(s.last))}</div>`
       :(s.n!=null&&N>0&&chosen?`<div>${unitAction(chosen)}${chosen.multi?" (a ×"+(chosen.src.multi||5)+" ogni carta vale "+(chosen.src.multi||5)+")":""}</div><div>${fmt(chosen.multi?Math.round(s.n/(+chosen.src.multi||5)):s.n)}</div>`:"");
     const buy=ev&&N>0?(s.plan?Math.ceil(s.plan.R):null):s.miss;
-    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"🙂 Se va normalmente":"😬 Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
+    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"Se va normalmente":"Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
       <div class="kv"><div>Copie L1 da ottenere</div><div>${fmt(N)}</div>${cyc}
         <div>Gemme da spendere in tutto</div><div>${fmt(s.need)}</div>
         <div>${ev&&N>0?"Gemme che non arrivano da gratis/pass":"Gemme che ti mancano oggi"}</div><div class="${buy>0?"bad":"good"}">${fmt(buy)}</div>
@@ -1344,7 +1344,7 @@ function advRecalc(){
   const forgeNeed=goals.reduce((s,g)=>s+g.mp.forge,0), fsMed=qtl(S.fsArr,.5), forgeMiss=Math.max(0,forgeNeed-num(ui.forge)-fsMed);
   $("#advTitle").innerHTML=`${goals.length} ${goals.length===1?"truppa":"truppe"}, ${evs.length} ${evs.length===1?"evento":"eventi"} · simulazione di ${fmt(runs)} partite complete.`;
   $("#advSummary").innerHTML=sc.map(s=>{ const ok=s.key==="typ", buy=s.plan?Math.ceil(s.plan.R):null;
-    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"🙂 Se va normalmente":"😬 Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
+    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"Se va normalmente":"Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
       <div class="kv">
         <div>Gemme da spendere in tutto</div><div>${fmt(s.need)}</div>
         <div>Gemme che non arrivano da gratis/pass</div><div class="${buy>0?"bad":"good"}">${fmt(buy)}</div>
