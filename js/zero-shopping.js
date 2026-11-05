@@ -134,7 +134,7 @@ function renderTips(c){
     if(c.D<30){ const p30=spendPlan(B.miss,30); if(p30&&p30.cost<B.plan.cost-0.5) add("good",`Se l'evento fosse tra 30 giorni, anche se va male spenderesti <b>${eur(p30.cost)}</b> invece di ${eur(B.plan.cost)}.`); }
     const on=cfg.cards.filter(x=>x.on&&x.upfront+x.daily*x.days>0);
     if(on.length){ const best=on.map(x=>({x,v:x.eur/(x.upfront+x.daily*x.days)*1000})).sort((a,b)=>a.v-b.v)[0]; const g=bestGemsPerStone(), es=cfg.packs.filter(p=>p.gems>0).map(p=>p.eur/p.gems/(g||1)*1000), esMin=es.length?Math.min(...es):null;
-      add("",`I pass mensili sono il modo più economico di comprare gemme: <b>${esc(best.x.name)}</b> costa ${eur(best.v)} ogni 1.000 gemme${esMin?`, circa ${fmt(esMin/best.v,1)} volte meno delle Eternity Stone`:""}. Conviene solo se entri in gioco ogni giorno.`); }
+      add("",`I pass sono il modo più economico di comprare gemme: <b>${esc(best.x.name)}</b> costa ${eur(best.v)} ogni 1.000 gemme${esMin?`, circa ${fmt(esMin/best.v,1)} volte meno delle Eternity Stone`:""}. Conviene solo se entri in gioco ogni giorno.`); }
     const fd=freeDaily();
     if(fd>0) add("",`Senza spendere niente (QG livello ${ui.hqLevel}${otherDaily()?" + "+(cfg.free||[]).filter(f=>f.on).map(f=>esc(f.name)).join(" + "):""} = ${fmt(fd)} gemme al giorno) ti servono <b>${gg(daysToFree(A.miss))}</b> se va normalmente, <b>${gg(daysToFree(B.miss))}</b> se va male.`);
   } else if(c.N>0&&B.miss===0){

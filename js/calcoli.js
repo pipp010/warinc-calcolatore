@@ -232,7 +232,10 @@ function buyPlan(G,D=0){
   return best;
 }
 const hqDaily=()=>((cfg.hq.rates||{})[ui.hqLevel]||0)*24;
-const otherDaily=()=>(cfg.free||[]).filter(f=>f.on).reduce((s,f)=>s+num(f.daily),0);
+const fRate=f=>num(f.gems)/Math.max(1,num(f.every)||1);           // gemme al giorno in media
+const freeOn=()=>(cfg.free||[]).filter(f=>f.on&&num(f.gems)>0);
+const everyTxt=n=>{ n=Math.max(1,num(n)||1); return n===1?"al giorno":n===7?"a settimana":n===14?"ogni 2 settimane":n===30?"al mese":n%7===0?`ogni ${n/7} settimane`:`ogni ${n} giorni`; };
+const otherDaily=()=>freeOn().reduce((s,f)=>s+fRate(f),0);
 const freeDaily=()=>hqDaily()+otherDaily();
 const freeGems=D=>D*freeDaily();
 function cardGems(c,D){
@@ -263,8 +266,8 @@ function daysToFree(G){
 function gemSources(){
   const out=[], g=bestGemsPerStone();
   out.push({n:`Quartier generale (liv. ${ui.hqLevel})`, v:0, month:hqDaily()*30, how:`${fmt(hqDaily())} gemme al giorno, gratis`});
-  (cfg.free||[]).filter(f=>f.on&&num(f.daily)).forEach(f=>out.push({n:f.name, v:0, month:num(f.daily)*30, how:`circa ${fmt(f.daily)} gemme al giorno, gratis`}));
-  cfg.cards.forEach(c=>{ const t=c.upfront+c.daily*c.days; if(t) out.push({n:c.name, v:c.eur/t*1000, month:t, how:`${fmt(c.upfront)} subito + ${fmt(c.daily)} al giorno · bisogna entrare ogni giorno`}); });
+  freeOn().forEach(f=>out.push({n:f.name, v:0, month:fRate(f)*30, how:`circa ${fmt(f.gems)} gemme ${everyTxt(f.every)}, gratis`}));
+  cfg.cards.forEach(c=>{ const t=c.upfront+c.daily*c.days; if(t) out.push({n:c.name, v:c.eur/t*1000, month:t, how:c.upfront?`${fmt(c.upfront)} subito + ${fmt(c.daily)} al giorno · bisogna entrare ogni giorno`:`${fmt(c.daily*c.days)} gemme in ${gg(c.days)} · arrivano man mano che giochi`}); });
   cfg.gemPacks.forEach(p=>{ if(p.gems>0) out.push({n:p.name, v:p.eur/p.gems*1000, month:p.perDay?p.perDay*30*p.gems:(p.max?p.max*p.gems:Infinity), how:"in gioco, subito"+(p.perDay?` · max ${p.perDay} al giorno`:"")+(p.extra?` · contiene anche ${esc(p.extra)}`:"")}); });
   cfg.packs.forEach(p=>{ if(p.gems>0&&g) out.push({n:`Eternity Stone ${p.name}`, v:p.eur/p.gems/g*1000, month:Infinity, how:"store web · si convertono in gemme in gioco"}); });
   return out.sort((a,b)=>a.v-b.v);

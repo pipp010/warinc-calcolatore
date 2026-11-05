@@ -288,16 +288,16 @@ $("#hqTable").addEventListener("click",e=>{
 });
 
 function renderFree(){
-  $("#freeTable").innerHTML=`<tr><th>Attiva</th><th>Nome</th><th>Gemme al giorno</th><th>In 30 giorni</th><th></th></tr>`+
-    (cfg.free||[]).map((f,i)=>`<tr><td><input type="checkbox" data-f="${i}" data-k="on" ${f.on?"checked":""}></td><td><input data-f="${i}" data-k="name" value="${esc(f.name)}"></td><td><input type="number" min="0" data-f="${i}" data-k="daily" value="${f.daily}"></td><td>${fmt(num(f.daily)*30)}</td><td><button class="btn" data-delf="${i}">✕</button></td></tr>`).join("");
+  $("#freeTable").innerHTML=`<tr><th>Attiva</th><th>Nome</th><th>Gemme</th><th>Ogni (giorni)</th><th>Media al giorno</th><th>In 30 giorni</th><th></th></tr>`+
+    (cfg.free||[]).map((f,i)=>`<tr><td><input type="checkbox" data-f="${i}" data-k="on" ${f.on?"checked":""}></td><td><input data-f="${i}" data-k="name" value="${esc(f.name)}"></td><td><input type="number" min="0" data-f="${i}" data-k="gems" value="${f.gems}"></td><td><input type="number" min="1" data-f="${i}" data-k="every" value="${f.every}" title="1 = al giorno, 7 = a settimana, 14 = ogni 2 settimane"></td><td>${fmt(fRate(f))}</td><td>${fmt(fRate(f)*30)}</td><td><button class="btn" data-delf="${i}">✕</button></td></tr>`).join("");
 }
 $("#freeTable").addEventListener("change",e=>{ const i=e.target.dataset.f,k=e.target.dataset.k; if(i==null) return; const f=cfg.free[i]; f[k]=k==="on"?e.target.checked:(k==="name"?e.target.value:num(e.target.value)); renderFree(); changed(); });
 $("#freeTable").addEventListener("click",e=>{ const d=e.target.dataset.delf; if(d==null) return; cfg.free.splice(+d,1); renderFree(); changed(); });
-$("#addFree").onclick=()=>{ (cfg.free=cfg.free||[]).push({name:"Nuova entrata",daily:0,on:true}); renderFree(); save(); };
+$("#addFree").onclick=()=>{ (cfg.free=cfg.free||[]).push({name:"Nuova entrata",gems:0,every:1,on:true}); renderFree(); save(); };
 
 function renderCards(){
   $("#cardTable").innerHTML=`<tr><th>Usa</th><th>Nome</th><th>Prezzo €</th><th>Subito</th><th>Al giorno</th><th>Giorni</th><th>Totale</th><th>€ ogni 1.000 gemme</th></tr>`+
-    cfg.cards.map((c,i)=>{ const tot=c.upfront+c.daily*c.days; return `<tr><td><input type="checkbox" data-c="${i}" data-k="on" ${c.on?"checked":""}></td><td><input data-c="${i}" data-k="name" value="${esc(c.name)}"></td><td><input type="number" step="0.01" data-c="${i}" data-k="eur" value="${c.eur}"></td><td><input type="number" data-c="${i}" data-k="upfront" value="${c.upfront}"></td><td><input type="number" data-c="${i}" data-k="daily" value="${c.daily}"></td><td><input type="number" data-c="${i}" data-k="days" value="${c.days}"></td><td>${fmt(tot)}</td><td class="good">${tot?eur(c.eur/tot*1000):"—"}</td></tr>`; }).join("");
+    cfg.cards.map((c,i)=>{ const tot=c.upfront+c.daily*c.days; return `<tr><td><input type="checkbox" data-c="${i}" data-k="on" ${c.on?"checked":""}></td><td><input data-c="${i}" data-k="name" value="${esc(c.name)}"></td><td><input type="number" step="0.01" data-c="${i}" data-k="eur" value="${c.eur}"></td><td><input type="number" data-c="${i}" data-k="upfront" value="${c.upfront}"></td><td><input type="number" step="any" data-c="${i}" data-k="daily" value="${+(+c.daily).toFixed(2)}"></td><td><input type="number" data-c="${i}" data-k="days" value="${c.days}"></td><td>${fmt(Math.round(tot))}</td><td class="good">${tot?eur(c.eur/tot*1000):"—"}</td></tr>`; }).join("");
 }
 $("#cardTable").addEventListener("change",e=>{ const i=e.target.dataset.c,k=e.target.dataset.k; if(i==null) return; const c=cfg.cards[i]; c[k]=k==="on"?e.target.checked:(k==="name"?e.target.value:num(e.target.value)); renderCards(); changed(); });
 

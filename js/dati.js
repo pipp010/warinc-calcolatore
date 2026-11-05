@@ -9,7 +9,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 17,
+  ver: 18,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -48,10 +48,24 @@ const DEFAULTS = {
   gemPacks: [ {name:"Pacchetto fornitura avanzata", eur:5.49, gems:1000, perDay:2, max:0, extra:"120.000 monete"} ],
   cards: [
     {name:"Pass mensile base", eur:4.99, upfront:600, daily:100, days:30, on:true},
-    {name:"Pass mensile avanzato", eur:13.99, upfront:2000, daily:320, days:30, on:true}
+    {name:"Pass mensile avanzato", eur:13.99, upfront:2000, daily:320, days:30, on:true},
+    // le 1.900 gemme del pass battaglia arrivano salendo di livello: qui sono spalmate sui 14 giorni
+    {name:"Pass battaglia premium", eur:4.99, upfront:0, daily:1900/14, days:14, on:true}
   ],
   hq: { rates:{5:16, 6:18, 7:20} },
-  free: [ {name:"Guerra infinita", daily:400, on:true} ],
+  // entrate gratuite: "gems" ogni "every" giorni (1 = al giorno, 7 = a settimana, 14 = ogni 2 settimane)
+  free: [
+    {name:"Guerra infinita", gems:400, every:1, on:true},
+    {name:"Missioni giornaliere", gems:120, every:1, on:true},
+    {name:"Missioni settimanali", gems:0, every:7, on:true},
+    {name:"Missioni bisettimanali", gems:500, every:14, on:true},
+    {name:"Pass battaglia (ricompense gratis)", gems:510, every:14, on:true},
+    {name:"Caccia", gems:500, every:7, on:true},
+    {name:"Co-op", gems:600, every:7, on:true},
+    {name:"Arena", gems:1000, every:14, on:true},
+    {name:"Guerra tra clan", gems:1500, every:14, on:true},
+    {name:"Caccia al clan", gems:500, every:14, on:true}
+  ],
   eventDays: 7
 };
 const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false, playLast:false, dur:null, adv:false, zero:false, goals:[], events:[], passes:{}};
@@ -92,7 +106,13 @@ function loadCfg(raw){
   if(!(c.eventDays>0)) c.eventDays=7;
   const PASS_REN={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
   (c.cards||[]).forEach(x=>{ if(PASS_REN[x.name]) x.name=PASS_REN[x.name]; });
-  c.ver=17;
+  (c.free||[]).forEach(f=>{ if(f.gems==null){ f.gems=+f.daily||0; f.every=1; } delete f.daily; if(!(f.every>0)) f.every=1; });
+  if(v<18){
+    const have=new Set((c.free||[]).map(f=>f.name)); c.free=c.free||[];
+    DEFAULTS.free.forEach(f=>{ if(!have.has(f.name)) c.free.push(clone(f)); });
+    if(!(c.cards||[]).some(x=>/battaglia/i.test(x.name))) c.cards.push(clone(DEFAULTS.cards.find(x=>/battaglia/i.test(x.name))));
+  }
+  c.ver=18;
   return c;
 }
 const PASS_REN_UI={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};

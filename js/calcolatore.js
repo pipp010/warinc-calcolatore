@@ -222,7 +222,7 @@ function gemFlow(plan,need,Dh){
   const add=(icon,name,formula,v,kind)=>{ v=Math.floor(v); if(v>0) L.push({icon,name,formula,v,kind}); };
   add("💼","Gemme che hai già","oggi",own,"own");
   add("🏰",`Quartier generale liv. ${ui.hqLevel}`,`${fmt(hqDaily())} al giorno × ${gg(d)}`,hqDaily()*d,"free");
-  (cfg.free||[]).filter(f=>f.on&&num(f.daily)).forEach(f=>add("⚔️",esc(f.name),`${fmt(f.daily)} al giorno × ${gg(d)}`,num(f.daily)*d,"free"));
+  freeOn().forEach(f=>add("⚔️",esc(f.name),num(f.every)>1?`${fmt(f.gems)} ${everyTxt(f.every)} → in ${gg(d)} circa`:`${fmt(f.gems)} al giorno × ${gg(d)}`,fRate(f)*d,"free"));
   cfg.cards.forEach(c=>{ const l=passLeft(c); if(l>0){ const n=Math.min(d,l); add("📅",`${esc(c.name)} (già attivo)`,`${fmt(c.daily)} al giorno × ${gg(n)}${n<d?" (poi scade)":""}`,c.daily*n,"free"); } });
   if(plan) plan.used.filter(u=>u.buys>0).forEach(u=>{ const dd=u.c.daily?Math.round((u.gems-u.buys*u.c.upfront)/u.c.daily):0;
     add("🛒",`${esc(u.c.name)} (da comprare)`,`${u.buys>1?u.buys+" × ":""}${fmt(u.c.upfront)} all'acquisto${dd>0?` + ${fmt(u.c.daily)} al giorno × ${gg(dd)}`:""}`,u.gems,"pass"); });
@@ -245,11 +245,13 @@ function renderHow(id,o){
   const el=$(id); if(!el) return;
   if(!o||!o.bad||o.bad.need<=0){ el.innerHTML=""; return; }
   const B=o.bad, T=o.typ, li=[];
-  const daily=[`QG ${fmt(hqDaily())}`].concat((cfg.free||[]).filter(f=>f.on&&num(f.daily)).map(f=>`${esc(f.name)} ~${fmt(f.daily)}`))
+  const per=freeOn().filter(f=>num(f.every)>1), d1=freeOn().filter(f=>num(f.every)<=1);
+  const daily=[`QG ${fmt(hqDaily())}`].concat(d1.map(f=>`${esc(f.name)} ~${fmt(f.gems)}`))
     .concat(cfg.cards.filter(c=>passLeft(c)>0).map(c=>`${esc(c.name)} ${fmt(c.daily)}`))
     .concat(o.plan?o.plan.used.filter(u=>u.buys>0).map(u=>`${esc(u.c.name)} ${fmt(u.c.daily)}`):[]);
-  const perDay=freeDaily()+cfg.cards.filter(c=>passLeft(c)>0).reduce((s,c)=>s+c.daily,0)+(o.plan?o.plan.used.filter(u=>u.buys>0).reduce((s,u)=>s+u.c.daily,0):0);
+  const perDay=hqDaily()+d1.reduce((s,f)=>s+num(f.gems),0)+cfg.cards.filter(c=>passLeft(c)>0).reduce((s,c)=>s+c.daily,0)+(o.plan?o.plan.used.filter(u=>u.buys>0).reduce((s,u)=>s+u.c.daily,0):0);
   if(B.d>0) li.push(`<b>Ogni giorno entra e ritira tutto:</b> ${daily.join(" + ")} = circa <b>${fmt(perDay)} gemme al giorno</b>. Se salti giorni, i conti non tornano più.`);
+  if(B.d>0&&per.length) li.push(`<b>Ritira anche le ricompense periodiche:</b> `+per.map(f=>`${esc(f.name)} ${fmt(f.gems)} ${everyTxt(f.every)}`).join(" · ")+` (in media circa <b>${fmt(per.reduce((s,f)=>s+fRate(f),0))} gemme al giorno</b>). Sono conteggiate nel piano: se ne salti una, mancano gemme.`);
   if(o.plan) o.plan.used.filter(u=>u.buys>0).forEach(u=>li.push(`Compra il <b>${esc(u.c.name)}</b> <b>subito</b>: le gemme giornaliere contano solo dal giorno in cui lo attivi.`));
   li.push(`${B.free>0?"<b>Non spendere le gemme gratis per altro:</b> mettile da parte":"<b>Tieni da parte le gemme</b>"} fino ${o.when}. Devi arrivarci con almeno <b>${fmt(B.need)}</b> gemme${T&&T.need<B.need?` (se va normalmente ne bastano ${fmt(T.need)}, ma per sicurezza conta sulla cifra più alta)`:""}.`);
   if(o.steps&&o.steps.length>1) li.push(`Gemme da avere pronte a ogni evento (se va male): `+o.steps.map(s=>`<b>${fmt(s.v)}</b> ${s.t<=0?"oggi":"il "+itDate(addDays(s.t))}`).join(" · ")+`. Tra un evento e l'altro le gemme gratis ricominciano ad accumularsi: non toccarle.`);
