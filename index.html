@@ -221,7 +221,7 @@ details.box2{border-radius:14px;background:var(--panel)}
   .top h1 small{font-size:11px}
   .top .lbl{display:none}
   .top .btn{padding:5px 9px;min-height:0;font-size:15px;line-height:1.2}
-  .tabs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .tabs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
   .tabs button{padding:6px 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wrap{padding-top:12px}
 }
@@ -246,10 +246,10 @@ body.zero #extrTable th:nth-child(8),body.zero #extrTable td:nth-child(8),body.z
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v4.1</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v4.2</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
-    <button data-p="mine">⛏️ Miniera</button>
+    <button data-p="mine" hidden>⛏️ Miniera</button><!-- miniera nascosta: da riattivare togliendo hidden -->
     <button data-p="set">⚙️ Impostazioni</button>
     <button data-p="info">ℹ️ Guida</button>
   </nav>
@@ -1854,7 +1854,7 @@ $("#themeBtn").onclick=()=>{
 
 function renderAll(){ renderInputs(); renderSettings(); recalcNow(); }
 renderAll();
-{ const p=lsGet(LS_KEY+"-page"); if(p&&["calc","mine","set","info"].includes(p)) showPage(p); }
+{ const p=lsGet(LS_KEY+"-page"); if(p&&["calc","set","info"].includes(p)) showPage(p); }
 </script>
 </body>
 </html>
