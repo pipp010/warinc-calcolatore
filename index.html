@@ -229,6 +229,8 @@ details.box2{border-radius:14px;background:var(--panel)}
 .modebar{flex-direction:column;align-items:stretch;gap:6px}
 .modeopt{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .zeroonly{display:none}
+#mineRank td:nth-child(2){min-width:170px}
+.top h1{white-space:nowrap}
 body.zero #passBlock{display:none}
 @media (max-width:700px){.modebar{flex-direction:row;flex-wrap:wrap;gap:2px 18px;padding:6px 14px}.modeopt .muted{display:none}.modeopt .check{min-height:34px;font-size:14px}}
 body.zero .zeroonly{display:block}
@@ -244,15 +246,15 @@ body.zero #extrTable th:nth-child(8),body.zero #extrTable td:nth-child(8),body.z
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v4.0</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v4.1</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="mine">⛏️ Miniera</button>
     <button data-p="set">⚙️ Impostazioni</button>
     <button data-p="info">ℹ️ Guida</button>
   </nav>
-  <button class="btn" id="saveFileBtn" title="Scarica un file con impostazioni e dati inseriti">💾<span class="lbl"> Salva configurazione</span></button>
-  <button class="btn" id="loadFileBtn" title="Carica un file salvato in precedenza">📂<span class="lbl"> Carica configurazione</span></button>
+  <button class="btn" id="saveFileBtn" title="Scarica un file con impostazioni e dati inseriti">💾<span class="lbl"> Salva</span></button>
+  <button class="btn" id="loadFileBtn" title="Carica un file salvato in precedenza">📂<span class="lbl"> Carica</span></button>
   <input type="file" id="loadFile" accept=".json,application/json" style="display:none">
   <button class="btn" id="themeBtn" title="Cambia tema">◐</button>
 </div></div>
