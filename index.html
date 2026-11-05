@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>War Inc Calcolatore</title>
+<style>
+:root{
+  --bg:#f3f4f7;--panel:#fff;--panel2:#f8f9fb;--ink:#1b1e24;--muted:#626a76;--line:#dfe3e8;
+  --accent:#c2410c;--accent-soft:#fff1e8;--accent-ink:#fff;
+  --good:#15803d;--good-soft:#e8f6ed;--bad:#b91c1c;--bad-soft:#fdecec;--warn-bg:#fff7d6;--warn-ink:#6f5300;
+  --mythic:#dc2626;--legendary:#d97706;--epic:#7c3aed;--rare:#2563eb;--common:#6b7280;--input:#fff;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111317;--panel:#1a1d22;--panel2:#20242a;--ink:#e8eaed;--muted:#9aa1ab;--line:#2d323a;
+  --accent:#fb923c;--accent-soft:#3a2416;--accent-ink:#1a1d22;
+  --good:#4ade80;--good-soft:#143022;--bad:#f87171;--bad-soft:#3a1a1a;--warn-bg:#3a3110;--warn-ink:#f5d76e;--input:#14171b;
+  --shadow:none;
+}}
+:root[data-theme="dark"]{
+  --bg:#111317;--panel:#1a1d22;--panel2:#20242a;--ink:#e8eaed;--muted:#9aa1ab;--line:#2d323a;
+  --accent:#fb923c;--accent-soft:#3a2416;--accent-ink:#1a1d22;
+  --good:#4ade80;--good-soft:#143022;--bad:#f87171;--bad-soft:#3a1a1a;--warn-bg:#3a3110;--warn-ink:#f5d76e;--input:#14171b;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.top{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.top h1{font-size:18px;margin:0;flex:1;min-width:180px}
+.top h1 small{color:var(--muted);font-weight:400;font-size:12px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600}
+.tabs button.on{background:var(--accent-soft);color:var(--accent)}
+.wrap{max-width:1120px;margin:0 auto;padding:16px 16px 80px}
+section.page{display:none}section.page.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:var(--shadow)}
+.card h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.card h3{font-size:13px;margin:22px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.card .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.step{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:14px;flex:none}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;line-height:1.3}
+input,select,textarea{width:100%;background:var(--input);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;min-height:38px}
+input:disabled{opacity:.45}
+textarea{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+input[type=checkbox]{width:18px;height:18px;min-height:0;accent-color:var(--accent);vertical-align:middle;flex:none}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.inv .field label{text-align:center;margin-bottom:2px}
+.inv input{text-align:center;padding:6px}
+.check{display:flex !important;gap:8px;align-items:center;font-size:14px;color:var(--ink) !important;min-height:38px;margin:0 !important;cursor:pointer}
+.daysbox{display:flex;gap:10px;align-items:center}
+.daysbox input[type=number]{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px}
+@media (max-width:700px){.summary{grid-template-columns:1fr}}
+.scen{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel2)}
+.scen.ok{border-top:4px solid var(--good)}.scen.ko{border-top:4px solid var(--bad)}
+.scen h4{margin:0 0 2px;font-size:15px}
+.scen .hint{font-size:12px;color:var(--muted);margin-bottom:10px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-variant-numeric:tabular-nums}
+.kv div:nth-child(odd){color:var(--muted);font-size:14px}
+.kv div:nth-child(even){font-weight:700;text-align:right}
+.kv .big{font-size:22px;color:var(--accent)}
+.head{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.pill{background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px}
+.pill b{color:var(--accent)}
+.tips{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tips li{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px}
+.tips li.good{border-left-color:var(--good)}.tips li.bad{border-left-color:var(--bad)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600;background:var(--panel2)}
+td.l,th.l{text-align:left;white-space:normal}
+td input{min-width:76px}
+tr.best td{background:var(--good-soft);font-weight:600}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:13px;margin:0 0 16px}
+.muted{color:var(--muted);font-size:13px}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.r-mythic{color:var(--mythic)}.r-legendary{color:var(--legendary)}.r-epic{color:var(--epic)}.r-rare{color:var(--rare)}.r-common{color:var(--common)}
+details.box2{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;background:var(--panel2)}
+details.box2 summary{cursor:pointer;font-weight:600}
+.snav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.snav a{font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--ink);text-decoration:none;background:var(--panel)}
+.snav a:hover{border-color:var(--accent)}
+code{background:var(--panel2);padding:1px 5px;border-radius:5px}
+@media (max-width:600px){th,td{padding:6px 7px;font-size:13px}.card{padding:14px}.kv .big{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <h1>War Inc · Calcolatore <small>v1.2 bozza</small></h1>
+  <nav class="tabs" id="tabs">
+    <button data-p="calc" class="on">🧮 Calcolatore</button>
+    <button data-p="set">⚙️ Impostazioni</button>
+    <button data-p="info">ℹ️ Guida</button>
+  </nav>
+  <button class="btn" id="themeBtn" title="Cambia tema">◐</button>
+</div></div>
+
+<div class="wrap">
+<!-- =================== CALCOLATORE =================== -->
+<section class="page on" id="p-calc">
+  <div class="cols">
+    <div class="card">
+      <h2><span class="step">1</span> Cosa ho</h2>
+      <p class="sub">Le tue risorse attuali.</p>
+      <div class="fields">
+        <div class="field"><label>Gemme</label><input id="hGems" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>Pergamene (Evoc. limitata)</label><input id="hScrolls" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>Pietre forgia</label><input id="hForge" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>Livello Quartier generale</label><select id="hHq"></select></div>
+      </div>
+      <h3>Copie del personaggio già possedute, per livello</h3>
+      <div class="inv" id="hInv"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="invReset">Azzera copie</button></div>
+    </div>
+    <div class="card">
+      <h2><span class="step">2</span> Cosa voglio</h2>
+      <p class="sub">L'obiettivo e i tempi.</p>
+      <div class="fields">
+        <div class="field"><label>Personaggio (facoltativo)</label><input id="wName" placeholder="es. Sniper"></div>
+        <div class="field"><label>Rarità</label><select id="wRarity"></select></div>
+        <div class="field"><label>Livello da raggiungere</label><select id="wTarget"></select></div>
+        <div class="field"><label>Quante copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
+        <div class="field"><label>Entro quanti giorni</label>
+          <div class="daysbox"><input id="wDays" type="number" min="1"><label class="check"><input type="checkbox" id="wNow"> Subito</label></div></div>
+        <div class="field"><label>Modalità di estrazione</label><select id="wMode"></select></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <label class="check"><input type="checkbox" id="wDisc"> Evento sconto pietre forgia attivo (<span id="discPctLbl">15</span>%)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span> Risultato</h2>
+    <p class="sub" id="resTitle"></p>
+    <div class="head" id="head"></div>
+    <div class="summary" id="summary"></div>
+
+    <h3>💡 Suggerimenti</h3>
+    <ul class="tips" id="tips"></ul>
+
+    <h3>🛒 Cosa comprare</h3>
+    <div class="cols">
+      <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="planTyp"></table></div></div>
+      <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="planBad"></table></div></div>
+    </div>
+    <p class="muted" id="planNote"></p>
+
+    <h3>⏳ Quanto spendi in base a quanto puoi aspettare</h3>
+    <div class="tw"><table id="waitTable"></table></div>
+
+    <h3>🃏 Confronto modalità di estrazione</h3>
+    <div class="tw"><table id="extrTable"></table></div>
+    <p class="muted">Ruota e Asso carte: conviene fermarsi dopo l'ultimo traguardo (100 giri / 100 carte) e ricominciare alla ruota o all'evento successivo. «Rischio» = quanto spendi in più se va male rispetto a quando va normalmente.</p>
+
+    <details class="box2"><summary>🔨 Dettaglio fusioni e pietre forgia</summary>
+      <div class="tw" style="margin-top:10px"><table id="mergeTable"></table></div>
+    </details>
+    <details class="box2"><summary>💎 Classifica: modi di ottenere gemme</summary>
+      <div class="tw" style="margin-top:10px"><table id="gemRank"></table></div>
+      <p class="muted">Le fonti gratis e i pass hanno un tetto al mese: superato quello si passa alle successive.</p>
+    </details>
+  </div>
+</section>
+
+<!-- =================== IMPOSTAZIONI =================== -->
+<section class="page" id="p-set">
+  <div class="warn">I valori vengono salvati in questo browser. Modificali quando il gioco cambia: il calcolatore si aggiorna da solo.</div>
+  <nav class="snav">
+    <a href="#s-merge">🔨 Fusione</a><a href="#s-src">🃏 Fonti di carte</a><a href="#s-free">🏰 Gemme gratis</a>
+    <a href="#s-cards">📅 Pass mensili</a><a href="#s-gp">🎁 Pacchetti in gioco</a><a href="#s-es">💠 Eternity Stone</a><a href="#s-io">💾 Backup</a>
+  </nav>
+
+  <div class="card" id="s-merge">
+    <h2>🔨 Fusione</h2>
+    <div class="fields">
+      <div class="field"><label>Livello massimo</label><input id="sMaxLevel" type="number" min="2" max="15"></div>
+      <div class="field"><label>Copie dello stesso livello per fondere</label><input id="sMergeSize" type="number" min="2" max="5"></div>
+      <div class="field"><label>Sconto pietre forgia durante l'evento (%)</label><input id="sDiscPct" type="number" min="0" max="100"></div>
+    </div>
+    <h3>Pietre forgia per singola fusione</h3>
+    <div class="tw"><table id="forgeTable"></table></div>
+    <p class="muted">Con lo sconto il valore viene arrotondato per difetto.</p>
+  </div>
+
+  <div class="card" id="s-src">
+    <h2>🃏 Fonti di carte</h2>
+    <p class="sub">Probabilità nel formato <code>3.5%x1 + 0.5%x2</code> (probabilità × copie). Pool = quanti personaggi diversi di quella rarità. Traguardi, uno per riga: <code>10: carta mythic x1 scelta</code> (scelta = lo stesso personaggio che vuoi), <code>25: gemme 500</code>, <code>200: forgia 500</code>. «Fermati a» = dopo quanti giri/carte smettere e ricominciare alla ruota o all'evento successivo (più valori separati da virgola = più proposte).</p>
+    <div id="srcList"></div>
+    <div class="row"><button class="btn" id="addSrc">+ Aggiungi fonte</button></div>
+  </div>
+
+  <div class="card" id="s-free">
+    <h2>🏰 Gemme gratis</h2>
+    <h3>Produzione Quartier generale</h3>
+    <div class="tw"><table id="hqTable"></table></div>
+    <h3>Altre entrate giornaliere</h3>
+    <div class="tw"><table id="freeTable"></table></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="addFree">+ Aggiungi entrata</button></div>
+  </div>
+
+  <div class="card" id="s-cards">
+    <h2>📅 Pass mensili</h2>
+    <p class="sub">Gemme subito + gemme da riscattare ogni giorno. Un solo pass attivo per tipo. «Usa» = il calcolatore può consigliarlo.</p>
+    <div class="tw"><table id="cardTable"></table></div>
+  </div>
+
+  <div class="card" id="s-gp">
+    <h2>🎁 Pacchetti in gioco (gemme dirette)</h2>
+    <p class="sub">0 = nessun limite.</p>
+    <div class="tw"><table id="gpTable"></table></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="addGp">+ Aggiungi pacchetto</button></div>
+  </div>
+
+  <div class="card" id="s-es">
+    <h2>💠 Eternity Stone</h2>
+    <p class="sub">Pacchetti dello store web (store.89trillion.com/rising, prezzi del 05/11/2026). Le Eternity Stone si convertono in gemme dentro il gioco.</p>
+    <div class="tw"><table id="packTable"></table></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="addPack">+ Aggiungi pacchetto</button></div>
+    <h3>Conversione Eternity Stone → gemme</h3>
+    <div class="tw"><table id="convTable"></table></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="addConv">+ Aggiungi scaglione</button></div>
+  </div>
+
+  <div class="card" id="s-io">
+    <h2>💾 Backup</h2>
+    <p class="sub">Esporta per salvare il testo o passarlo a qualcun altro; incollalo e premi Importa per caricarlo.</p>
+    <textarea id="jsonBox" rows="7"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" id="exportBtn">Esporta</button>
+      <button class="btn primary" id="importBtn">Importa</button>
+      <button class="btn" id="defaultsBtn">Ripristina valori iniziali</button>
+    </div>
+  </div>
+</section>
+
+<!-- =================== GUIDA =================== -->
+<section class="page" id="p-info">
+  <div class="card">
+    <h2>Come si usa</h2>
+    <ol>
+      <li>In <b>Cosa ho</b> inserisci gemme, pergamene, pietre forgia, livello del QG e le copie del personaggio che possiedi.</li>
+      <li>In <b>Cosa voglio</b> scegli rarità, livello, quante copie a quel livello e in quanti giorni (oppure «Subito»).</li>
+      <li>Sotto trovi sempre due ipotesi: <b>se va normalmente</b> e <b>se va male</b>, con quante gemme servono, quante mancano, cosa comprare e quanto costa.</li>
+    </ol>
+    <h2 style="margin-top:18px">Cosa vogliono dire le due ipotesi</h2>
+    <ul>
+      <li><b>Se va normalmente</b>: metà dei giocatori spende meno di così, metà di più.</li>
+      <li><b>Se va male</b>: 9 giocatori su 10 ce la fanno entro questa cifra. Se ti prepari per questa, sei tranquillo.</li>
+      <li><b>Rischio</b>: quanto si spende in più se va male.</li>
+    </ul>
+    <h2 style="margin-top:18px">Ruota e Asso carte: fermati ai traguardi</h2>
+    <ul>
+      <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. Arriva a 200 giri solo se ti servono le pietre forgia (traguardo 200).</li>
+      <li>L'Asso carte dà un mitico in più a 10, 30, 60 e 100 carte girate: anche qui conviene fermarsi a 100. Le carte girate a ×5 contano 5.</li>
+    </ul>
+    <h2 style="margin-top:18px">Da verificare in gioco</h2>
+    <ul>
+      <li>Evocazione limitata: 4% per <i>ciascuno</i> dei 3 mitici (12% in tutto, come diceva il vecchio sito) oppure 4% in tutto?</li>
+      <li>Traguardi dell'Asso carte (oggi: +1 mitico a 10, 30, 60, 100 carte girate).</li>
+      <li>Ruota per leggendari/epici/rari: quanti personaggi diversi per rarità (oggi conto 1, cioè ottimistico)?</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   DATI
+   ===================================================================== */
+const RAR = ["mythic","legendary","epic","rare","common"];
+const RAR_IT = {mythic:"Mitico",legendary:"Leggendario",epic:"Epico",rare:"Raro",common:"Comune"};
+const LS_KEY = "warinc-calc-v2";
+const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
+
+const DEFAULTS = {
+  ver: 11,
+  maxLevel: 9,
+  mergeSize: 2,
+  forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
+    mythic:{7:2560,8:5920,9:9600},
+    legendary:{7:1920,8:4400,9:7200},
+    epic:{7:960,8:2220,9:3600},
+    rare:{7:64,8:160,9:480},
+    common:{7:32,8:80,9:240}
+  },
+  discount: { pct:15 },
+  sources: [
+    { name:"Ruota", unit:"giri", cost:100, on:true, start:0, cycle:0, stops:"100, 200", scrolls:false,
+      rates:{mythic:[{p:.035,c:1},{p:.005,c:2}],legendary:[{p:.15,c:1}],epic:[{p:.16,c:1}],rare:[{p:.40,c:1}],common:[]},
+      pool:{mythic:1,legendary:1,epic:1,rare:1,common:1},
+      milestones:"10: carta mythic x1 scelta\n25: gemme 500\n50: carta mythic x1 scelta\n100: carta mythic x2 scelta\n200: forgia 500",
+      note:"Il mitico in palio è noto in anticipo; i traguardi danno lo stesso mitico." },
+    { name:"Evocazione limitata", unit:"evocazioni", cost:100, on:true, start:0, cycle:0, stops:"", scrolls:true,
+      rates:{mythic:[{p:.12,c:1}],legendary:[],epic:[],rare:[],common:[]},
+      pool:{mythic:3,legendary:1,epic:1,rare:1,common:1},
+      milestones:"", note:"3 mitici al 4% ciascuno (12% in tutto). Prima si usano le pergamene." },
+    { type:"board", name:"Asso carte", unit:"carte", cost:250, cards:12, hits:1, multi:5, on:true, start:0, stops:"100",
+      milestones:MS_ASSO,
+      note:"12 carte coperte, 1 mitico. Trovato il mitico il tabellone si rimescola. ×5: costo, premio e traguardi ×5." }
+  ],
+  packs: [ // Eternity Stone
+    {name:"60", eur:4.99, gems:60, max:0},
+    {name:"120", eur:9.99, gems:120, max:0},
+    {name:"250", eur:18.99, gems:250, max:0},
+    {name:"650", eur:46.99, gems:650, max:0},
+    {name:"1.400", eur:92.99, gems:1400, max:0},
+    {name:"2.800", eur:184.99, gems:2800, max:0},
+    {name:"7.000", eur:460.99, gems:7000, max:0},
+    {name:"14.000", eur:920.99, gems:14000, max:0}
+  ],
+  conv: [ {stones:100, gems:1000}, {stones:500, gems:5000}, {stones:1000, gems:12000} ],
+  gemPacks: [ {name:"Pacchetto in gioco", eur:5.49, gems:1000, perDay:2, max:0} ],
+  cards: [
+    {name:"Carta mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
+    {name:"Carta mensile (avanzata)", eur:13.99, upfront:2000, daily:320, days:30, on:true}
+  ],
+  hq: { rates:{5:16, 6:18, 7:20} },
+  free: [ {name:"Guerra infinita", daily:400, on:true} ]
+};
+const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false};
+
+const clone = o => JSON.parse(JSON.stringify(o));
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+function loadCfg(raw){
+  let c=clone(DEFAULTS);
+  try{ const s=raw!=null?raw:lsGet(LS_KEY); if(s) c=Object.assign(clone(DEFAULTS), JSON.parse(s)); }catch(e){}
+  // migrazioni dalle bozze precedenti
+  const v=c.ver||0;
+  if(v<6||!Array.isArray(c.sources)) c.sources=clone(DEFAULTS.sources);
+  if(!c.sources.some(x=>x.type==="board")) c.sources.push(clone(DEFAULTS.sources[2]));
+  c.sources.forEach(x=>{
+    if(x.type==="board"&&x.milestones==null){ x.milestones=MS_ASSO; x.start=0; }
+    if(x.name==="Ruota (Wheel)") x.name="Ruota";
+    if(v<11){
+      if(x.name==="Ruota"){ x.stops="100, 200"; x.unit="giri"; }
+      if(x.type==="board"){ x.stops="100"; x.unit="carte"; }
+      if(x.name==="Evocazione limitata"){ x.unit="evocazioni"; x.stops=""; const m=(x.rates.mythic||[])[0]; if(m&&m.p===0.04){ m.p=0.12; x.note=DEFAULTS.sources[1].note; } }
+    }
+  });
+  (c.gemPacks||[]).forEach(p=>{ if(p.perDay==null) p.perDay=(p.eur===5.49&&p.gems===1000)?2:0; });
+  if(!c.hq||!c.hq.rates) c.hq=clone(DEFAULTS.hq);
+  [1,2,3,4,8].forEach(l=>delete c.hq.rates[l]); if(c.hq.rates[7]==null) c.hq.rates[7]=20;
+  delete c.hq.level;
+  if(!c.discount||c.discount.pct==null) c.discount={pct:15};
+  (c.packs||[]).forEach(p=>{ p.name=String(p.name).replace(/\s*pietre$/i,""); });
+  if(v<11){ c.free=clone(DEFAULTS.free); if(+c.freeDaily>0) c.free.push({name:"Altre entrate",daily:+c.freeDaily,on:true}); }
+  delete c.freeDaily; delete c.funds;
+  c.ver=11;
+  return c;
+}
+function loadUi(){
+  const u=clone(UI_DEFAULTS);
+  try{ const s=lsGet(LS_KEY+"-ui2"); if(s){ const o=JSON.parse(s); Object.assign(u,o); if(o.now==null){ u.now=false; if(!o.days) u.days=30; } delete u.risk; return u; } }catch(e){}
+  try{ const o=JSON.parse(lsGet(LS_KEY+"-ui")||"null"); if(o){ ["inv","name","rarity","target","scrolls"].forEach(k=>{ if(o[k]!=null) u[k]=o[k]; }); if(o.eurOwned) u.gems=o.eurOwned; } }catch(e){}
+  return u;
+}
+let cfg=loadCfg(), ui=loadUi();
+const save=()=>lsSet(LS_KEY, JSON.stringify(cfg));
+const saveUi=()=>lsSet(LS_KEY+"-ui2", JSON.stringify(ui));
+save();
+
+/* =====================================================================
+   UTILITÀ
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const fmt = (n,d=0) => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("it-IT",{maximumFractionDigits:d,minimumFractionDigits:d});
+const eur = n => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const gg = d => fmt(d)+(d===1?" giorno":" giorni");
+const pct = x => (x>=0?"+":"")+fmt(x*100)+"%";
+const medal = i => ["🥇","🥈","🥉"][i]||String(i+1);
+const num = (v,min=0) => Math.max(min, +v||0);
+const stopLabel=(src,stop)=>{ if(!stop) return ""; const st=parseStops(src.stops), i=st.indexOf(stop), u=src.unit||"tentativi"; return i>0?` · ${st[i-1]}+ ${u} (fino a ${stop})`:` · ${stop} ${u}`; };
+const parseStops = s => String(s||"").split(/[,;\s]+/).map(Number).filter(x=>x>0);
+
+/* =====================================================================
+   FUSIONE
+   ===================================================================== */
+const cardsForLevel = L => Math.pow(cfg.mergeSize, L-1);
+function forgeCost(r,L,disc){ const b=(cfg.forge[r]||{})[L]||0; return disc ? Math.floor(b*(1-cfg.discount.pct/100)) : b; }
+function planMerge(inv,target,qty,rarity,disc){
+  const k=cfg.mergeSize, need=new Array(cfg.maxLevel+2).fill(0); need[target]=Math.max(1,qty|0);
+  let forge=0, merges=0, cardsMissing=0; const rows=[];
+  for(let L=target;L>=1;L--){
+    const use=Math.min(+inv[L]||0, need[L]), miss=need[L]-use;
+    if(L>1) need[L-1]+=miss*k; else cardsMissing=miss;
+    const each=L>1?forgeCost(rarity,L,disc):0, fs=miss*each;
+    forge+=fs; if(L>1) merges+=miss;
+    rows.push({L,need:need[L],use,miss,each,fs});
+  }
+  return {rows,forge,merges,cardsMissing};
+}
+
+/* =====================================================================
+   PROBABILITÀ — fonti a estrazione (ruota, evocazione)
+   ===================================================================== */
+function parseMilestones(txt){
+  const out=[];
+  (txt||"").split(/\n/).forEach(line=>{
+    const m=line.trim().match(/^(\d+)\s*:\s*(\w+)\s*(.*)$/i); if(!m) return;
+    const at=+m[1], kind=m[2].toLowerCase(), rest=m[3];
+    if(kind.startsWith("cart")||kind==="card"){
+      const r=(rest.match(/(mythic|legendary|epic|rare|common)/i)||[])[1];
+      out.push({at,type:"card",rarity:r?r.toLowerCase():"mythic",copies:+((rest.match(/x\s*(\d+)/i)||[])[1]||1),choose:/scelt|choose/i.test(rest)});
+    } else if(kind.startsWith("gem")) out.push({at,type:"gems",amount:+((rest.match(/\d+/)||[0])[0])});
+    else if(kind.startsWith("forg")||kind==="fs") out.push({at,type:"fs",amount:+((rest.match(/\d+/)||[0])[0])});
+  });
+  return out;
+}
+const milestoneHits=(src,ms,a)=>ms.filter(m=>src.cycle>0?(((a-1)%src.cycle)+1===m.at):a===m.at);
+// versione della fonte che si ferma dopo "stop" giri e ricomincia alla ruota/evento successivo
+function withStop(src,stop){
+  if(!stop) return src;
+  const ms=(src.milestones||"").split("\n").filter(l=>{ const m=l.trim().match(/^(\d+)\s*:/); return m&&+m[1]<=stop; }).join("\n");
+  return Object.assign({},src,{cycle:stop,milestones:ms,start:0});
+}
+
+// cdf[k] = probabilità di avere almeno N copie dopo k tentativi
+function solve(src,rarity,N){
+  const pool=Math.max(1,+src.pool[rarity]||1);
+  const q=[0]; let pos=0;
+  (src.rates[rarity]||[]).forEach(e=>{ const p=e.p/pool; q[e.c]=(q[e.c]||0)+p; pos+=p; });
+  for(let i=0;i<q.length;i++) q[i]=q[i]||0; q[0]=Math.max(0,1-pos);
+  const ms=parseMilestones(src.milestones).filter(m=>m.type==="card"&&m.rarity===rarity);
+  if(N<=0) return {cdf:[1]};
+  if(pos<=0&&!ms.length) return null;
+  let st=new Float64Array(N+1), nx=new Float64Array(N+1); st[0]=1;
+  const cdf=[0], start=+src.start||0;
+  for(let k=1;k<=300000;k++){
+    nx.fill(0);
+    for(let i=0;i<N;i++){ const v=st[i]; if(!v) continue; for(let c=0;c<q.length;c++) if(q[c]) nx[Math.min(N,i+c)]+=v*q[c]; }
+    nx[N]+=st[N]; [st,nx]=[nx,st];
+    for(const m of milestoneHits(src,ms,start+k)){
+      const p=m.choose?1:1/pool; nx.fill(0);
+      for(let i=0;i<=N;i++){ const v=st[i]; if(!v) continue; nx[Math.min(N,i+m.copies)]+=v*p; nx[i]+=v*(1-p); }
+      [st,nx]=[nx,st];
+    }
+    cdf.push(st[N]);
+    if(st[N]>=0.9995) break;
+    if(pos<=0&&k>start+5000) break;
+  }
+  return cdf[cdf.length-1]>0.5?{cdf}:null;
+}
+function gemCost(src,k){
+  const free=src.scrolls?Math.min(k,num(ui.scrolls)):0;
+  const ms=parseMilestones(src.milestones).filter(m=>m.type==="gems");
+  let refund=0; const start=+src.start||0;
+  for(let a=start+1;a<=start+k;a++) for(const m of milestoneHits(src,ms,a)) refund+=m.amount;
+  return Math.max(0,(k-free)*src.cost-refund);
+}
+function fsGained(src,k){
+  const ms=parseMilestones(src.milestones).filter(m=>m.type==="fs");
+  let s=0; const start=+src.start||0;
+  for(let a=start+1;a<=start+k;a++) for(const m of milestoneHits(src,ms,a)) s+=m.amount;
+  return s;
+}
+function pctl(cdf,p){ for(let k=0;k<cdf.length;k++) if(cdf[k]>=p) return k; return null; }
+const meanOf=cdf=>cdf.reduce((s,c)=>s+(1-c),0);
+
+/* =====================================================================
+   PROBABILITÀ — tabellone (Asso carte), calcolo esatto con traguardi
+   Unità = 1 carta girata a ×1; a ×m una carta vale m unità (anche per i traguardi).
+   Con "stop": dopo stop unità si ricomincia con un evento nuovo (tabellone e traguardi da capo).
+   ===================================================================== */
+function boardFirstHit(M,h){
+  const C=(n,k)=>{ if(k<0||k>n) return 0; let r=1; for(let i=1;i<=k;i++) r=r*(n-k+i)/i; return r; };
+  const d=[0]; for(let k=1;k<=M-h+1;k++) d[k]=C(M-k,h-1)/C(M,h); return d;
+}
+function solveBoard(src,N,useMulti,stop){
+  const M=Math.max(1,+src.cards||12), h=Math.max(1,Math.min(M,+src.hits||1)), m=useMulti?Math.max(1,+src.multi||1):1;
+  const J=M-h+1, S=(N+1)*J, start=stop?0:num(src.start);
+  const ms=parseMilestones(src.milestones||"").filter(x=>x.type==="card"&&x.rarity==="mythic"&&(!stop||x.at<=stop));
+  const pos=t=>stop?((start+t)%stop):start+t;          // posizione nell'evento corrente
+  const bonus=(t,k)=>{ let b=0; for(let u=1;u<=k;u++){ const p=stop?(((start+t+u-1)%stop)+1):start+t+u; for(const x of ms) if(x.at===p) b+=x.copies; } return b; };
+  if(N<=0) return {cdf:[1],m};
+  const ring=new Map(), absAt=new Map(), get=t=>{ if(!ring.has(t)) ring.set(t,new Float64Array(S)); return ring.get(t); };
+  get(0)[0]=1;
+  const cdf=[]; let done=0;
+  for(let t=0;t<200000;t++){
+    const cur=ring.get(t); ring.delete(t);
+    if(cur){
+      for(let c=0;c<N;c++) for(let j=0;j<J;j++){
+        const v=cur[c*J+j]; if(!v) continue;
+        let k=(useMulti&&N-c>=m)?m:1;
+        if(stop){ const left=stop-pos(t); if(k>left) k=1; }      // a fine evento non si può superare lo stop
+        const pHit=h/(M-j), b=bonus(t,k), nxt=get(t+k);
+        const reset=stop&&pos(t+k)===0;                          // evento finito: tabellone nuovo
+        const add=p=>absAt.set(t+k,(absAt.get(t+k)||0)+p);
+        const cH=Math.min(N,c+k+b), cM=Math.min(N,c+b);
+        if(cH>=N) add(v*pHit); else nxt[cH*J]+=v*pHit;
+        if(pHit<1){ if(cM>=N) add(v*(1-pHit)); else nxt[cM*J+(reset?0:j+1)]+=v*(1-pHit); }
+      }
+    }
+    done+=absAt.get(t)||0; absAt.delete(t);
+    cdf.push(done);
+    if(done>=0.99995||(!ring.size&&!absAt.size)) break;
+  }
+  return {cdf,m};
+}
+
+/* =====================================================================
+   CONFRONTO MODALITÀ DI ESTRAZIONE
+   ===================================================================== */
+function extractionRows(N,rar,owned){
+  const rows=[];
+  if(N<=0) return rows;
+  cfg.sources.forEach((src,si)=>{
+    if(!src.on) return;
+    const stops=parseStops(src.stops), variants=stops.length?stops:[0], unit=src.unit||"tentativi";
+    if(src.type==="board"){
+      if(rar!=="mythic") return;
+      const ms=[false]; if((+src.multi||1)>1&&N>=(+src.multi)) ms.push(true);
+      variants.forEach(stop=>ms.forEach(multi=>{
+        const r=solveBoard(src,N,multi,stop), u=+src.cost||0;
+        const uT=pctl(r.cdf,.5), uB=pctl(r.cdf,.9); if(uT==null) return;
+        const pOwned=r.cdf[Math.min(r.cdf.length-1,Math.floor(owned/(u||1)))]||0;
+        rows.push({id:`${si}${multi?"m":""}@${stop}`, src, stop, multi, unit,
+          label:`${src.name} ×${multi?r.m:1}`+stopLabel(src,stop),
+          mean:meanOf(r.cdf)*u, typ:uT*u, bad:uB*u, nT:uT, nB:uB,
+          cycT:stop?Math.ceil(uT/stop):null, cycB:stop?Math.ceil(uB/stop):null, fsT:0, fsB:0, pOwned});
+      }));
+    } else {
+      variants.forEach(stop=>{
+        const s=withStop(src,stop), r=solve(s,rar,N); if(!r) return;
+        const kT=pctl(r.cdf,.5), kB=pctl(r.cdf,.9); if(kT==null) return;
+        let k=0; while(k+1<r.cdf.length&&gemCost(s,k+1)<=owned) k++;
+        const fsTxt=fsGained(s,stop||0);
+        rows.push({id:`${si}@${stop}`, src, stop, unit,
+          label:src.name+stopLabel(src,stop)+(stop&&fsTxt?` +${fmt(fsTxt)} pietre forgia a ruota`:""),
+          mean:gemCost(s,Math.round(meanOf(r.cdf))), typ:gemCost(s,kT), bad:gemCost(s,kB), nT:kT, nB:kB,
+          cycT:stop?Math.ceil(kT/stop):null, cycB:stop?Math.ceil(kB/stop):null, fsT:fsGained(s,kT), fsB:fsGained(s,kB), pOwned:r.cdf[k]||0});
+      });
+    }
+  });
+  return rows;
+}
+
+/* =====================================================================
+   GEMME → EURO
+   ===================================================================== */
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function bestGemsPerStone(){ const v=cfg.conv.filter(c=>c.stones>0).map(c=>c.gems/c.stones); return v.length?Math.max(...v):null; }
+function convPlan(G){
+  const tiers=cfg.conv.filter(c=>c.stones>0&&c.gems>0);
+  if(G<=0) return {stones:0,gems:0,items:[]};
+  if(!tiers.length) return null;
+  let g=0; tiers.forEach(t=>g=gcd(g,t.gems));
+  const U=Math.ceil(G/g); if(U>3e6) return null;
+  const dp=new Float64Array(U+1).fill(Infinity), par=new Int32Array(U+1).fill(-1); dp[0]=0;
+  for(let x=1;x<=U;x++) for(let j=0;j<tiers.length;j++){ const c=dp[Math.max(0,x-tiers[j].gems/g)]+tiers[j].stones; if(c<dp[x]){dp[x]=c;par[x]=j;} }
+  const cnt=new Map(); let x=U, gems=0;
+  while(x>0&&par[x]>=0){ const t=tiers[par[x]]; cnt.set(t,(cnt.get(t)||0)+1); gems+=t.gems; x=Math.max(0,x-t.gems/g); }
+  return {stones:dp[U],gems,items:[...cnt].map(([t,q])=>({t,q}))};
+}
+function cheapestStones(S){
+  const packs=cfg.packs.filter(p=>p.gems>0&&p.eur>=0);
+  if(S<=0) return {cost:0,items:[]};
+  const unl=packs.filter(p=>!p.max), lim=packs.filter(p=>p.max>0);
+  let g=0; packs.forEach(p=>g=gcd(g,p.gems)); g=g||1;
+  const U=Math.ceil(S/g); if(U>3e6) return null;
+  const dp=new Float64Array(U+1).fill(Infinity), par=new Int32Array(U+1).fill(-1); dp[0]=0;
+  for(let x=1;x<=U;x++) for(let j=0;j<unl.length;j++){ const c=dp[Math.max(0,x-unl[j].gems/g)]+unl[j].eur; if(c<dp[x]){dp[x]=c;par[x]=j;} }
+  let combos=[[]]; for(const p of lim){ const n=[]; for(const c of combos) for(let q=0;q<=p.max;q++) n.push(c.concat(q)); combos=n; if(combos.length>50000) return null; }
+  let best=null;
+  for(const c of combos){
+    let s=0,e=0; c.forEach((q,i)=>{s+=q*lim[i].gems;e+=q*lim[i].eur});
+    const rem=Math.max(0,Math.ceil((S-s)/g)), tot=e+dp[rem];
+    if(isFinite(tot)&&(!best||tot<best.cost-1e-9)) best={cost:tot,c,rem};
+  }
+  if(!best) return null;
+  const cnt=new Map(); best.c.forEach((q,i)=>{ if(q) cnt.set(lim[i],q); });
+  let x=best.rem; while(x>0&&par[x]>=0){ const p=unl[par[x]]; cnt.set(p,(cnt.get(p)||0)+1); x=Math.max(0,x-p.gems/g); }
+  return {cost:best.cost,items:[...cnt].map(([p,q])=>({p,q}))};
+}
+function buyPlan(G,D=0){
+  G=Math.max(0,Math.ceil(G));
+  const gp=cfg.gemPacks.filter(p=>p.gems>0&&p.eur>=0);
+  let combos=[[]];
+  for(const p of gp){ let cap=Math.ceil(G/p.gems); if(p.perDay>0) cap=Math.min(cap,p.perDay*Math.max(1,D)); if(p.max>0) cap=Math.min(cap,p.max);
+    const n=[]; for(const c of combos) for(let q=0;q<=cap;q++){ n.push(c.concat(q)); if(n.length>20000) break; } combos=n; }
+  const memo=new Map(), stoneCost=S=>{ if(!memo.has(S)) memo.set(S,cheapestStones(S)); return memo.get(S); };
+  let best=null;
+  for(const c of combos){
+    let g=0,e=0; c.forEach((q,i)=>{g+=q*gp[i].gems;e+=q*gp[i].eur});
+    const cp=convPlan(Math.max(0,G-g)); if(!cp) continue;
+    const r=stoneCost(cp.stones); if(!r) continue;
+    const tot=e+r.cost;
+    if(!best||tot<best.cost-1e-9) best={cost:tot,gemItems:c.map((q,i)=>({p:gp[i],q})).filter(x=>x.q),gemsDirect:g,cp,r};
+  }
+  return best;
+}
+const hqDaily=()=>((cfg.hq.rates||{})[ui.hqLevel]||0)*24;
+const otherDaily=()=>(cfg.free||[]).filter(f=>f.on).reduce((s,f)=>s+num(f.daily),0);
+const freeDaily=()=>hqDaily()+otherDaily();
+const freeGems=D=>D*freeDaily();
+function cardGems(c,D){ if(D<=0) return {buys:1,gems:c.upfront,eur:c.eur}; const buys=Math.ceil(D/c.days); return {buys,gems:buys*c.upfront+Math.min(D,buys*c.days)*c.daily,eur:buys*c.eur}; }
+const planCache=new Map();
+function spendPlan(G,D){
+  const key=G+"|"+D; if(planCache.has(key)) return planCache.get(key);
+  const cards=cfg.cards.filter(c=>c.on&&c.days>0), free=Math.floor(freeGems(D));
+  let best=null;
+  for(let mask=0;mask<(1<<cards.length);mask++){
+    let gems=free,eurC=0; const used=[];
+    cards.forEach((c,i)=>{ if(mask&(1<<i)){ const r=cardGems(c,D); gems+=r.gems; eurC+=r.eur; used.push({c,...r}); } });
+    const bp=buyPlan(Math.max(0,G-gems),D); if(!bp) continue;
+    const tot=eurC+bp.cost;
+    if(!best||tot<best.cost-1e-9) best={cost:tot,free,used,bp,fromCards:gems-free};
+  }
+  planCache.set(key,best); return best;
+}
+function daysToFree(G){
+  if(G<=0) return 0; const fd=freeDaily(); if(fd<=0) return null;
+  return Math.ceil(G/fd);
+}
+function gemSources(){
+  const out=[], g=bestGemsPerStone();
+  out.push({n:`Quartier generale (liv. ${ui.hqLevel})`, v:0, month:hqDaily()*30, how:`${fmt(hqDaily())} gemme al giorno, gratis`});
+  (cfg.free||[]).filter(f=>f.on&&num(f.daily)).forEach(f=>out.push({n:f.name, v:0, month:num(f.daily)*30, how:`circa ${fmt(f.daily)} gemme al giorno, gratis`}));
+  cfg.cards.forEach(c=>{ const t=c.upfront+c.daily*c.days; if(t) out.push({n:c.name, v:c.eur/t*1000, month:t, how:`${fmt(c.upfront)} subito + ${fmt(c.daily)} al giorno · bisogna entrare ogni giorno`}); });
+  cfg.gemPacks.forEach(p=>{ if(p.gems>0) out.push({n:p.name, v:p.eur/p.gems*1000, month:p.perDay?p.perDay*30*p.gems:(p.max?p.max*p.gems:Infinity), how:"in gioco, subito"+(p.perDay?` · max ${p.perDay} al giorno`:"")}); });
+  cfg.packs.forEach(p=>{ if(p.gems>0&&g) out.push({n:`Eternity Stone ${p.name}`, v:p.eur/p.gems/g*1000, month:Infinity, how:"store web · si convertono in gemme in gioco"}); });
+  return out.sort((a,b)=>a.v-b.v);
+}
+
+/* =====================================================================
+   CALCOLATORE — interfaccia
+   ===================================================================== */
+function renderInputs(){
+  $("#hGems").value=ui.gems||""; $("#hScrolls").value=ui.scrolls||""; $("#hForge").value=ui.forge||"";
+  const lv=Object.keys(cfg.hq.rates).map(Number).sort((a,b)=>a-b);
+  if(!lv.includes(+ui.hqLevel)) ui.hqLevel=lv.includes(5)?5:(lv[0]||5);
+  $("#hHq").innerHTML=lv.map(l=>`<option value="${l}" ${l===+ui.hqLevel?"selected":""}>Livello ${l} · ${fmt(cfg.hq.rates[l])} gemme/ora</option>`).join("");
+  let g=""; for(let L=1;L<=cfg.maxLevel;L++) g+=`<div class="field"><label>L${L}</label><input type="number" min="0" data-l="${L}" value="${ui.inv[L]||""}" placeholder="0"></div>`;
+  $("#hInv").innerHTML=g;
+  $("#wName").value=ui.name||"";
+  $("#wRarity").innerHTML=RAR.map(r=>`<option value="${r}" ${ui.rarity===r?"selected":""}>${RAR_IT[r]}</option>`).join("");
+  if(+ui.target>cfg.maxLevel) ui.target=cfg.maxLevel;
+  let t=""; for(let L=2;L<=cfg.maxLevel;L++) t+=`<option value="${L}" ${+ui.target===L?"selected":""}>Livello ${L} (${fmt(cardsForLevel(L))} carte)</option>`;
+  $("#wTarget").innerHTML=t;
+  $("#wQty").value=ui.qty||1;
+  $("#wDays").value=ui.days||30; $("#wNow").checked=!!ui.now; $("#wDays").disabled=!!ui.now;
+  $("#wDisc").checked=!!ui.disc; $("#discPctLbl").textContent=cfg.discount.pct;
+  renderModeOptions();
+}
+function renderModeOptions(){
+  const opts=[`<option value="auto">Automatica (la più conveniente)</option>`];
+  cfg.sources.forEach((s,i)=>{ if(!s.on) return;
+    const stops=parseStops(s.stops), vs=stops.length?stops:[0], u=s.unit||"tentativi";
+    vs.forEach(st=>{
+      const suf=stopLabel(s,st);
+      if(s.type==="board"){ opts.push(`<option value="${i}@${st}">${esc(s.name)} ×1${suf}</option>`); if((+s.multi||1)>1) opts.push(`<option value="${i}m@${st}">${esc(s.name)} ×${s.multi}${suf}</option>`); }
+      else opts.push(`<option value="${i}@${st}">${esc(s.name)}${suf}</option>`);
+    }); });
+  $("#wMode").innerHTML=opts.join("");
+  $("#wMode").value=ui.mode; if($("#wMode").value!==String(ui.mode)){ ui.mode="auto"; $("#wMode").value="auto"; }
+}
+const bindNum=(sel,key,min=0)=>$(sel).addEventListener("input",e=>{ ui[key]=num(e.target.value,min); saveUi(); recalc(); });
+bindNum("#hGems","gems"); bindNum("#hScrolls","scrolls"); bindNum("#hForge","forge"); bindNum("#wDays","days",1); bindNum("#wQty","qty",1);
+$("#wNow").onchange=e=>{ ui.now=e.target.checked; $("#wDays").disabled=ui.now; saveUi(); recalc(); };
+$("#hHq").onchange=e=>{ ui.hqLevel=+e.target.value; saveUi(); recalc(); };
+$("#hInv").addEventListener("input",e=>{ const l=e.target.dataset.l; if(!l) return; ui.inv[l]=num(e.target.value); saveUi(); recalc(); });
+$("#invReset").onclick=()=>{ ui.inv={}; saveUi(); renderInputs(); recalc(); };
+$("#wName").oninput=e=>{ ui.name=e.target.value; saveUi(); recalc(); };
+$("#wRarity").onchange=e=>{ ui.rarity=e.target.value; saveUi(); recalc(); };
+$("#wTarget").onchange=e=>{ ui.target=+e.target.value; saveUi(); recalc(); };
+$("#wMode").onchange=e=>{ ui.mode=e.target.value; saveUi(); recalc(); };
+$("#wDisc").onchange=e=>{ ui.disc=e.target.checked; saveUi(); recalc(); };
+
+let recalcTimer=null;
+function recalc(){ clearTimeout(recalcTimer); recalcTimer=setTimeout(recalcNow,80); }
+
+function recalcNow(){
+  planCache.clear();
+  const rar=ui.rarity, target=Math.min(+ui.target||2,cfg.maxLevel), qty=Math.max(1,ui.qty|0), D=ui.now?0:Math.max(1,num(ui.days,1));
+  const who=ui.name?`<b>${esc(ui.name)}</b> (<span class="r-${rar}">${RAR_IT[rar]}</span>)`:`personaggio <b class="r-${rar}">${RAR_IT[rar]}</b>`;
+  const mp=planMerge(ui.inv,target,qty,rar,ui.disc), N=mp.cardsMissing;
+  $("#resTitle").innerHTML=`Obiettivo: <b>${qty}</b> ${qty===1?"copia":"copie"} di ${who} a livello <b>${target}</b>, ${D?`entro <b>${gg(D)}</b>`:"<b>subito</b>"}.`;
+
+  const rows=extractionRows(N,rar,num(ui.gems));
+  const sorted=[...rows].sort((a,b)=>a.typ-b.typ||a.bad-b.bad);
+  let chosen=ui.mode==="auto"?sorted[0]:rows.find(r=>r.id===String(ui.mode));
+  if(!chosen) chosen=sorted[0];
+
+  // le due ipotesi
+  const sc=["typ","bad"].map(key=>{
+    const need=N<=0?0:(chosen?chosen[key]:null);
+    const miss=need==null?null:Math.max(0,need-num(ui.gems));
+    const fsGot=chosen?(key==="typ"?chosen.fsT:chosen.fsB):0;
+    const forgeMiss=Math.max(0,mp.forge-num(ui.forge)-fsGot);
+    return {key,need,miss,plan:miss==null?null:spendPlan(miss,D),forgeMiss,fsGot,cyc:chosen?(key==="typ"?chosen.cycT:chosen.cycB):null,n:chosen?(key==="typ"?chosen.nT:chosen.nB):null};
+  });
+
+  $("#head").innerHTML=
+    `<span class="pill">Copie L1 da ottenere: <b>${fmt(N)}</b></span>`+
+    `<span class="pill">Fusioni: <b>${fmt(mp.merges)}</b></span>`+
+    `<span class="pill">Pietre forgia per le fusioni: <b>${fmt(mp.forge)}</b></span>`+
+    (N>0&&chosen?`<span class="pill">Modalità: <b>${esc(chosen.label)}</b></span>`:"");
+  $("#summary").innerHTML=sc.map(s=>{
+    const ok=s.key==="typ";
+    const cyc=s.cyc!=null&&chosen?`<div>${chosen.src.type==="board"?"Eventi":"Ruote"} da fare (${stopLabel(chosen.src,chosen.stop).slice(3)})</div><div>${fmt(s.cyc)}</div>`:(s.n!=null&&N>0&&chosen?`<div>${chosen.unit?chosen.unit[0].toUpperCase()+chosen.unit.slice(1):"Tentativi"}</div><div>${fmt(s.n)}</div>`:"");
+    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"🙂 Se va normalmente":"😬 Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
+      <div class="kv">${cyc}
+        <div>Gemme necessarie</div><div>${fmt(s.need)}</div>
+        <div>Gemme che ti mancano</div><div class="${s.miss>0?"bad":"good"}">${fmt(s.miss)}</div>
+        <div>Pietre forgia mancanti${s.fsGot?` (dopo le ${fmt(s.fsGot)} della ruota)`:""}</div><div class="${s.forgeMiss>0?"bad":"good"}">${fmt(s.forgeMiss)}</div>
+        <div>Spesa minima ${D?`entro ${gg(D)}`:"subito"}</div><div class="big">${s.plan?eur(s.plan.cost):"—"}</div>
+      </div></div>`;
+  }).join("");
+
+  renderPlan("#planTyp",sc[0].plan,D,sc[0].miss);
+  renderPlan("#planBad",sc[1].plan,D,sc[1].miss);
+  renderWait(sc,D);
+  renderExtr(sorted,chosen,N);
+  renderMergeTable(mp);
+  renderGemRank();
+  renderTips({N,mp,rows,sorted,chosen,sc,D,rar,target,qty});
+}
+
+function renderPlan(id,plan,D,G){
+  if(G==null){ $(id).innerHTML=`<tr><td class="muted">Nessuna fonte disponibile per questa rarità: controlla le Impostazioni.</td></tr>`; return; }
+  if(G<=0){ $(id).innerHTML=`<tr><td class="good">Hai già abbastanza gemme 🎉</td></tr>`; return; }
+  if(!plan){ $(id).innerHTML=`<tr><td class="muted">Impossibile calcolare: controlla pacchetti e conversioni nelle Impostazioni.</td></tr>`; return; }
+  const r=[];
+  if(D>0&&plan.free>0) r.push([`🏰 Gratis in ${gg(D)} (QG${otherDaily()?" + altre entrate":""})`, "—", `${fmt(Math.min(plan.free,G))} gemme`, eur(0)]);
+  plan.used.forEach(u=>r.push([`📅 ${esc(u.c.name)}`, u.buys, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
+  plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}`, x.q, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
+  plan.bp.r.items.forEach(x=>r.push([`💠 Eternity Stone ${esc(x.p.name)}`, x.q, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
+  plan.bp.cp.items.forEach(x=>r.push([`🔁 Converti ${fmt(x.t.stones)} → ${fmt(x.t.gems)} gemme`, x.q, `${fmt(x.t.gems*x.q)} gemme`, "—"]));
+  $(id).innerHTML=`<tr><th>Cosa</th><th>Q.tà</th><th>Ottieni</th><th>€</th></tr>`+
+    (r.length?r.map(x=>`<tr><td class="l">${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("")+`<tr class="best"><td>Totale</td><td></td><td>${fmt(G)} gemme</td><td>${eur(plan.cost)}</td></tr>`
+     :`<tr><td colspan="4" class="good">Bastano le gemme gratis, non serve comprare niente.</td></tr>`);
+}
+function renderWait(sc,D){
+  if(sc[0].miss==null){ $("#waitTable").innerHTML=""; return; }
+  if(sc[1].miss<=0){ $("#waitTable").innerHTML=`<tr><td class="good">Non ti mancano gemme in nessuna delle due ipotesi.</td></tr>`; return; }
+  const ds=[...new Set([0,7,14,30,60,90,D])].sort((a,b)=>a-b);
+  const what=p=>[...p.used.map(u=>`${u.c.name}${u.buys>1?` ×${u.buys}`:""}`), ...p.bp.gemItems.map(x=>`${x.q} × ${x.p.name}`), ...(p.bp.r.items.length?["Eternity Stone"]:[])];
+  $("#waitTable").innerHTML=`<tr><th>Se puoi aspettare</th><th>Se va normalmente</th><th>Se va male</th><th class="l">Cosa comprare (se va male)</th></tr>`+ds.map(d=>{
+    const a=spendPlan(sc[0].miss,d), b=spendPlan(sc[1].miss,d); if(!a||!b) return "";
+    const w=what(b);
+    return `<tr${d===D?' class="best"':""}><td>${d===0?"Subito":gg(d)}</td><td>${eur(a.cost)}</td><td>${eur(b.cost)}</td><td class="l">${w.length?esc(w.join(" + ")):"niente, bastano le gemme gratis"}</td></tr>`;
+  }).join("");
+}
+function renderExtr(sorted,chosen,N){
+  if(N<=0){ $("#extrTable").innerHTML=`<tr><td class="good">Hai già le copie per il livello scelto: non serve estrarre.</td></tr>`; return; }
+  if(!sorted.length){ $("#extrTable").innerHTML=`<tr><td class="muted">Nessuna fonte attiva dà personaggi di questa rarità.</td></tr>`; return; }
+  const best=sorted[0], own=num(ui.gems);
+  $("#extrTable").innerHTML=`<tr><th>#</th><th>Modalità</th><th>Gemme se va normalmente</th><th>Gemme se va male</th><th>Rischio</th><th>Ruote / eventi</th><th>vs migliore</th>${own?"<th>Ce la fai con le tue gemme</th>":""}</tr>`+
+    sorted.map((x,i)=>`<tr${x===chosen?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.label)}${x===chosen?" ✔":""}</td><td>${fmt(x.typ)}</td><td>${fmt(x.bad)}</td><td>${x.typ?pct(x.bad/x.typ-1):"—"}</td><td>${x.cycT!=null?(x.cycT===x.cycB?fmt(x.cycT):`${fmt(x.cycT)}–${fmt(x.cycB)}`):"—"}</td><td>${i===0?"—":pct(x.typ/best.typ-1)}</td>${own?`<td>${fmt(x.pOwned*100,0)}%</td>`:""}</tr>`).join("");
+}
+function renderMergeTable(mp){
+  $("#mergeTable").innerHTML=`<tr><th>Livello</th><th>Servono</th><th>Già hai</th><th>Da creare / ottenere</th><th>Pietre per fusione</th><th>Pietre totali</th></tr>`+
+    mp.rows.map(r=>`<tr><td>L${r.L}</td><td>${fmt(r.need)}</td><td>${fmt(r.use)}</td><td>${fmt(r.miss)} ${r.L===1?"carte":"fusioni"}</td><td>${r.L>1?fmt(r.each):"—"}</td><td>${r.L>1?fmt(r.fs):"—"}</td></tr>`).join("")+
+    `<tr class="best"><td>Totale</td><td></td><td></td><td>${fmt(mp.merges)} fusioni</td><td></td><td>${fmt(mp.forge)}</td></tr>`;
+}
+function renderGemRank(){
+  $("#gemRank").innerHTML=`<tr><th>#</th><th>Fonte</th><th>€ ogni 1.000 gemme</th><th>Gemme al mese (max)</th><th class="l">Come</th></tr>`+
+    gemSources().map((x,i)=>`<tr${i<3?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.n)}</td><td>${x.v?eur(x.v):"gratis"}</td><td>${isFinite(x.month)?fmt(x.month):"illimitate"}</td><td class="l muted">${x.how}</td></tr>`).join("");
+}
+// costo per copia di una ruota/evento dentro i traguardi e dopo
+function stopAdvice(src){
+  const stops=parseStops(src.stops); if(!stops.length) return null;
+  const first=stops[0], ms=parseMilestones(src.milestones);
+  const msCopies=ms.filter(m=>m.type==="card"&&m.rarity==="mythic"&&m.at<=first).reduce((s,m)=>s+m.copies,0);
+  const refund=ms.filter(m=>m.type==="gems"&&m.at<=first).reduce((s,m)=>s+m.amount,0);
+  let perUnit;
+  if(src.type==="board"){ const d=boardFirstHit(+src.cards||12,+src.hits||1); perUnit=1/d.reduce((a,p,k)=>a+p*k,0); }
+  else perUnit=(src.rates.mythic||[]).reduce((a,e)=>a+e.p*e.c,0)/Math.max(1,+src.pool.mythic||1);
+  if(!perUnit) return null;
+  const inCopies=first*perUnit+msCopies, inCost=(first*src.cost-refund)/inCopies, outCost=src.cost/perUnit;
+  return {first,inCost,outCost,fs:ms.filter(m=>m.type==="fs").map(m=>m)};
+}
+function renderTips(c){
+  const t=[], add=(cls,html)=>t.push(`<li class="${cls}">${html}</li>`);
+  const [A,B]=c.sc;
+  if(c.N<=0){
+    add("good",`Hai già le copie necessarie: restano ${fmt(c.mp.merges)} fusioni e ${fmt(c.mp.forge)} pietre forgia.`);
+  } else if(!c.chosen){
+    add("bad","Nessuna fonte attiva dà personaggi di questa rarità: controlla le Impostazioni.");
+  } else {
+    const b=c.sorted[0];
+    add("good",`Per ${fmt(c.N)} copie la modalità più conveniente è <b>${esc(b.label)}</b>: <b>${fmt(b.typ)}</b> gemme se va normalmente, <b>${fmt(b.bad)}</b> se va male.`);
+    if(c.chosen!==b) add("",`Hai scelto <b>${esc(c.chosen.label)}</b>: costa ${pct(c.chosen.typ/b.typ-1)} rispetto alla migliore.`);
+    if(c.chosen.cycT!=null) add("",`Servono <b>${fmt(c.chosen.cycT)}</b> ${c.chosen.src.type==="board"?"eventi":"ruote"} (${stopLabel(c.chosen.src,c.chosen.stop).slice(3)}) se va normalmente, <b>${fmt(c.chosen.cycB)}</b> se va male.`);
+  }
+  // fermarsi ai traguardi
+  cfg.sources.filter(s=>s.on&&(s.type!=="board"||c.rar==="mythic")).forEach(s=>{
+    const a=stopAdvice(s); if(!a) return;
+    const fs=a.fs.find(m=>m.at>a.first);
+    add("",`<b>${esc(s.name)}: fermati a ${a.first} ${s.unit||""}.</b> Fino a ${a.first} una copia costa circa ${fmt(a.inCost)} gemme grazie ai traguardi, dopo circa ${fmt(a.outCost)}. ${fs?`Fai «100+ giri» (fino a ${fs.at}) solo se ti servono le pietre forgia (+${fmt(fs.amount)}).`:"Poi aspetta l'evento successivo."}`);
+  });
+  if(c.rows.some(r=>r.multi)) add("",`Asso carte: il ×5 <b>non fa risparmiare gemme</b> (stesso costo per carta e per i traguardi) ma rende il risultato più variabile. Serve solo a fare prima.`);
+  if(c.rows.some(r=>r.src.scrolls)&&num(ui.scrolls)) add("",`Le tue ${fmt(ui.scrolls)} pergamene valgono ${fmt(ui.scrolls)} evocazioni gratis nell'Evocazione limitata (già conteggiate).`);
+  if(B.miss>0&&B.plan){
+    if(c.D<30){ const p30=spendPlan(B.miss,30); if(p30&&p30.cost<B.plan.cost-0.5) add("good",`Se puoi aspettare 30 giorni, anche se va male spendi <b>${eur(p30.cost)}</b> invece di ${eur(B.plan.cost)}.`); }
+    const on=cfg.cards.filter(x=>x.on&&x.upfront+x.daily*x.days>0);
+    if(on.length){ const best=on.map(x=>({x,v:x.eur/(x.upfront+x.daily*x.days)*1000})).sort((a,b)=>a.v-b.v)[0]; const g=bestGemsPerStone(), es=cfg.packs.filter(p=>p.gems>0).map(p=>p.eur/p.gems/(g||1)*1000), esMin=es.length?Math.min(...es):null;
+      add("",`I pass mensili sono il modo più economico di comprare gemme: <b>${esc(best.x.name)}</b> costa ${eur(best.v)} ogni 1.000 gemme${esMin?`, circa ${fmt(esMin/best.v,1)} volte meno delle Eternity Stone`:""}. Conviene solo se entri in gioco ogni giorno.`); }
+    const fd=freeDaily();
+    if(fd>0) add("",`Senza spendere niente (QG livello ${ui.hqLevel}${otherDaily()?" + "+(cfg.free||[]).filter(f=>f.on).map(f=>esc(f.name)).join(" + "):""} = ${fmt(fd)} gemme al giorno) ti servono <b>${gg(daysToFree(A.miss))}</b> se va normalmente, <b>${gg(daysToFree(B.miss))}</b> se va male.`);
+  } else if(c.N>0&&B.miss===0){
+    add("good",`Le gemme che hai bastano anche se va male (${fmt(ui.gems)} su ${fmt(B.need)}).`);
+  } else if(c.N>0&&A.miss===0){
+    add("good",`Le gemme che hai bastano se va normalmente; se va male te ne mancano ${fmt(B.miss)}.`);
+  }
+  if(B.forgeMiss>0){
+    add("bad",`Ti mancano fino a <b>${fmt(B.forgeMiss)}</b> pietre forgia per le fusioni.`);
+    if(!ui.disc){ const md=planMerge(ui.inv,c.target,c.qty,c.rar,true); if(md.forge<c.mp.forge) add("",`Con l'evento sconto (${cfg.discount.pct}%) ne risparmieresti ${fmt(c.mp.forge-md.forge)}: se non hai fretta, fai le fusioni durante l'evento.`); }
+  }
+  $("#tips").innerHTML=t.join("");
+}
+
+/* =====================================================================
+   IMPOSTAZIONI
+   ===================================================================== */
+const ratesToStr=a=>(a||[]).map(e=>`${+(e.p*100).toFixed(4)}%x${e.c}`).join(" + ");
+function strToRates(s){ const out=[]; (s||"").split(/[+;]/).forEach(t=>{ const m=t.trim().replace(",",".").match(/^([\d.]+)\s*%?\s*(?:x\s*(\d+))?$/i); if(m) out.push({p:(+m[1])/100,c:+(m[2]||1)}); }); return out; }
+const changed=()=>{ save(); renderModeOptions(); recalc(); };
+
+function renderSettings(){
+  $("#sMaxLevel").value=cfg.maxLevel; $("#sMergeSize").value=cfg.mergeSize; $("#sDiscPct").value=cfg.discount.pct;
+  renderForge(); renderSources(); renderHq(); renderFree(); renderCards(); renderGp(); renderPacks(); renderConv();
+}
+$("#sMaxLevel").onchange=e=>{ cfg.maxLevel=Math.max(2,Math.min(15,+e.target.value||9)); save(); renderForge(); renderInputs(); recalc(); };
+$("#sMergeSize").onchange=e=>{ cfg.mergeSize=Math.max(2,+e.target.value||2); save(); renderInputs(); recalc(); };
+$("#sDiscPct").oninput=e=>{ cfg.discount.pct=Math.max(0,Math.min(100,+e.target.value||0)); save(); $("#discPctLbl").textContent=cfg.discount.pct; recalc(); };
+
+function renderForge(){
+  let h=`<tr><th>Rarità</th>`; for(let L=2;L<=cfg.maxLevel;L++) h+=`<th>L${L-1}→L${L}</th>`; h+="</tr>";
+  RAR.forEach(r=>{ h+=`<tr><td class="r-${r}"><b>${RAR_IT[r]}</b></td>`; for(let L=2;L<=cfg.maxLevel;L++) h+=`<td><input type="number" min="0" data-r="${r}" data-l="${L}" value="${(cfg.forge[r]||{})[L]||0}"></td>`; h+="</tr>"; });
+  $("#forgeTable").innerHTML=h;
+}
+$("#forgeTable").addEventListener("change",e=>{ const r=e.target.dataset.r,L=e.target.dataset.l; if(!r) return; (cfg.forge[r]=cfg.forge[r]||{})[L]=num(e.target.value); changed(); });
+
+function renderSources(){
+  $("#srcList").innerHTML=cfg.sources.map((s,i)=>s.type==="board"?boardSrcHtml(s,i):`
+  <details class="box2"><summary>${esc(s.name)} · ${fmt(s.cost)} 💎 a tentativo ${s.on?"":"· disattivata"}</summary>
+    <div class="fields" style="margin-top:12px">
+      <div class="field"><label>Nome</label><input data-s="${i}" data-k="name" value="${esc(s.name)}"></div>
+      <div class="field"><label>Gemme per tentativo</label><input type="number" data-s="${i}" data-k="cost" value="${s.cost}"></div>
+      <div class="field"><label>Fermati a (es. 100, 200)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label>Nome dei tentativi</label><input data-s="${i}" data-k="unit" value="${esc(s.unit||"")}" placeholder="giri"></div>
+      <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
+      <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="scrolls" ${s.scrolls?"checked":""}> Usa le pergamene</label></div>
+    </div>
+    <div class="tw" style="margin-top:12px"><table><tr><th>Rarità</th><th>Probabilità × copie</th><th>Pool</th><th>Per il personaggio che vuoi</th></tr>
+    ${RAR.map(r=>{ const tot=(s.rates[r]||[]).reduce((a,e)=>a+e.p*e.c,0); return `<tr><td class="r-${r}">${RAR_IT[r]}</td><td><input data-s="${i}" data-rate="${r}" value="${ratesToStr(s.rates[r])}" placeholder="—"></td><td><input type="number" min="1" data-s="${i}" data-pool="${r}" value="${s.pool[r]||1}"></td><td>${tot?fmt(tot/(s.pool[r]||1)*100,3)+"% copie a tentativo":"—"}</td></tr>`; }).join("")}
+    </table></div>
+    <div class="field" style="margin-top:12px"><label>Traguardi</label><textarea rows="5" data-s="${i}" data-k="milestones">${esc(s.milestones||"")}</textarea></div>
+    <div class="field" style="margin-top:8px"><label>Note</label><input data-s="${i}" data-k="note" value="${esc(s.note||"")}"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-delsrc="${i}">Elimina fonte</button></div>
+  </details>`).join("");
+}
+function boardSrcHtml(s,i){
+  const d=boardFirstHit(Math.max(1,+s.cards||12),Math.max(1,+s.hits||1)), mf=d.reduce((a,p,k)=>a+p*k,0);
+  return `
+  <details class="box2"><summary>${esc(s.name)} · tabellone · ${fmt(s.cost)} 💎 a carta ${s.on?"":"· disattivata"}</summary>
+    <div class="fields" style="margin-top:12px">
+      <div class="field"><label>Nome</label><input data-s="${i}" data-k="name" value="${esc(s.name)}"></div>
+      <div class="field"><label>Gemme per carta girata (×1)</label><input type="number" data-s="${i}" data-k="cost" value="${s.cost}"></div>
+      <div class="field"><label>Carte nel tabellone</label><input type="number" min="1" data-s="${i}" data-k="cards" value="${s.cards}"></div>
+      <div class="field"><label>Carte col mitico</label><input type="number" min="1" data-s="${i}" data-k="hits" value="${s.hits}"></div>
+      <div class="field"><label>Moltiplicatore (costo, premio, traguardi)</label><input type="number" min="1" data-s="${i}" data-k="multi" value="${s.multi}"></div>
+      <div class="field"><label>Fermati a (carte girate)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
+    </div>
+    <p class="muted">In media servono <b>${fmt(mf,2)}</b> carte per trovare il mitico → ${fmt(mf*s.cost)} gemme a copia senza traguardi.</p>
+    <div class="field"><label>Traguardi (carte girate: premio)</label><textarea rows="4" data-s="${i}" data-k="milestones">${esc(s.milestones||"")}</textarea></div>
+    <div class="field" style="margin-top:8px"><label>Note</label><input data-s="${i}" data-k="note" value="${esc(s.note||"")}"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" data-delsrc="${i}">Elimina fonte</button></div>
+  </details>`;
+}
+$("#srcList").addEventListener("change",e=>{
+  const t=e.target,i=t.dataset.s; if(i==null) return; const s=cfg.sources[i];
+  if(t.dataset.rate) s.rates[t.dataset.rate]=strToRates(t.value);
+  else if(t.dataset.pool) s.pool[t.dataset.pool]=Math.max(1,+t.value||1);
+  else { const k=t.dataset.k; s[k]=(k==="on"||k==="scrolls")?t.checked:(["cost","start","cycle","cards","hits","multi"].includes(k)?num(t.value):t.value); }
+  const open=[...document.querySelectorAll("#srcList details")].map(d=>d.open);
+  renderSources(); document.querySelectorAll("#srcList details").forEach((d,j)=>d.open=open[j]);
+  changed();
+});
+$("#srcList").addEventListener("click",e=>{ const d=e.target.dataset.delsrc; if(d==null) return; cfg.sources.splice(+d,1); ui.mode="auto"; saveUi(); renderSources(); changed(); });
+$("#addSrc").onclick=()=>{ cfg.sources.push({name:"Nuova fonte",unit:"tentativi",cost:100,on:true,start:0,cycle:0,stops:"",scrolls:false,rates:{mythic:[],legendary:[],epic:[],rare:[],common:[]},pool:{mythic:1,legendary:1,epic:1,rare:1,common:1},milestones:"",note:""}); renderSources(); changed(); };
+
+function renderHq(){
+  const lv=Object.keys(cfg.hq.rates).map(Number).sort((a,b)=>a-b);
+  $("#hqTable").innerHTML=`<tr><th>Livello</th><th>Gemme all'ora</th><th>Al giorno</th><th>In 30 giorni</th><th></th></tr>`+
+    lv.map(l=>`<tr><td>Livello ${l}</td><td><input type="number" min="0" data-hq="${l}" value="${cfg.hq.rates[l]}"></td><td>${fmt(cfg.hq.rates[l]*24)}</td><td>${fmt(cfg.hq.rates[l]*24*30)}</td><td><button class="btn" data-delhq="${l}">✕</button></td></tr>`).join("")+
+    `<tr><td colspan="5"><button class="btn" id="addHq">+ Aggiungi livello</button></td></tr>`;
+}
+$("#hqTable").addEventListener("change",e=>{ const l=e.target.dataset.hq; if(!l) return; cfg.hq.rates[l]=num(e.target.value); renderHq(); renderInputs(); changed(); });
+$("#hqTable").addEventListener("click",e=>{
+  if(e.target.id==="addHq"){ const lv=Object.keys(cfg.hq.rates).map(Number); cfg.hq.rates[(lv.length?Math.max(...lv):4)+1]=0; renderHq(); renderInputs(); changed(); return; }
+  const d=e.target.dataset.delhq; if(!d) return; delete cfg.hq.rates[d]; renderHq(); renderInputs(); saveUi(); changed();
+});
+
+function renderFree(){
+  $("#freeTable").innerHTML=`<tr><th>Attiva</th><th>Nome</th><th>Gemme al giorno</th><th>In 30 giorni</th><th></th></tr>`+
+    (cfg.free||[]).map((f,i)=>`<tr><td><input type="checkbox" data-f="${i}" data-k="on" ${f.on?"checked":""}></td><td><input data-f="${i}" data-k="name" value="${esc(f.name)}"></td><td><input type="number" min="0" data-f="${i}" data-k="daily" value="${f.daily}"></td><td>${fmt(num(f.daily)*30)}</td><td><button class="btn" data-delf="${i}">✕</button></td></tr>`).join("");
+}
+$("#freeTable").addEventListener("change",e=>{ const i=e.target.dataset.f,k=e.target.dataset.k; if(i==null) return; const f=cfg.free[i]; f[k]=k==="on"?e.target.checked:(k==="name"?e.target.value:num(e.target.value)); renderFree(); changed(); });
+$("#freeTable").addEventListener("click",e=>{ const d=e.target.dataset.delf; if(d==null) return; cfg.free.splice(+d,1); renderFree(); changed(); });
+$("#addFree").onclick=()=>{ (cfg.free=cfg.free||[]).push({name:"Nuova entrata",daily:0,on:true}); renderFree(); save(); };
+
+function renderCards(){
+  $("#cardTable").innerHTML=`<tr><th>Usa</th><th>Nome</th><th>Prezzo €</th><th>Subito</th><th>Al giorno</th><th>Giorni</th><th>Totale</th><th>€ ogni 1.000 gemme</th></tr>`+
+    cfg.cards.map((c,i)=>{ const tot=c.upfront+c.daily*c.days; return `<tr><td><input type="checkbox" data-c="${i}" data-k="on" ${c.on?"checked":""}></td><td><input data-c="${i}" data-k="name" value="${esc(c.name)}"></td><td><input type="number" step="0.01" data-c="${i}" data-k="eur" value="${c.eur}"></td><td><input type="number" data-c="${i}" data-k="upfront" value="${c.upfront}"></td><td><input type="number" data-c="${i}" data-k="daily" value="${c.daily}"></td><td><input type="number" data-c="${i}" data-k="days" value="${c.days}"></td><td>${fmt(tot)}</td><td class="good">${tot?eur(c.eur/tot*1000):"—"}</td></tr>`; }).join("");
+}
+$("#cardTable").addEventListener("change",e=>{ const i=e.target.dataset.c,k=e.target.dataset.k; if(i==null) return; const c=cfg.cards[i]; c[k]=k==="on"?e.target.checked:(k==="name"?e.target.value:num(e.target.value)); renderCards(); changed(); });
+
+function renderGp(){
+  $("#gpTable").innerHTML=`<tr><th>Nome</th><th>Prezzo €</th><th>Gemme</th><th>Max al giorno</th><th>Max totale</th><th>€ ogni 1.000 gemme</th><th></th></tr>`+
+    cfg.gemPacks.map((p,i)=>`<tr><td><input data-g="${i}" data-k="name" value="${esc(p.name)}"></td><td><input type="number" step="0.01" data-g="${i}" data-k="eur" value="${p.eur}"></td><td><input type="number" data-g="${i}" data-k="gems" value="${p.gems}"></td><td><input type="number" min="0" data-g="${i}" data-k="perDay" value="${p.perDay||0}"></td><td><input type="number" min="0" data-g="${i}" data-k="max" value="${p.max||0}"></td><td>${p.gems>0?eur(p.eur/p.gems*1000):"—"}</td><td><button class="btn" data-delg="${i}">✕</button></td></tr>`).join("");
+}
+$("#gpTable").addEventListener("change",e=>{ const i=e.target.dataset.g,k=e.target.dataset.k; if(i==null) return; cfg.gemPacks[i][k]=k==="name"?e.target.value:num(e.target.value); renderGp(); changed(); });
+$("#gpTable").addEventListener("click",e=>{ const d=e.target.dataset.delg; if(d==null) return; cfg.gemPacks.splice(+d,1); renderGp(); changed(); });
+$("#addGp").onclick=()=>{ cfg.gemPacks.push({name:"Nuovo",eur:0,gems:0,perDay:0,max:0}); renderGp(); save(); };
+
+function renderPacks(){
+  const g=bestGemsPerStone();
+  $("#packTable").innerHTML=`<tr><th>Eternity Stone</th><th>Prezzo €</th><th>Quantità</th><th>Max acquisti</th><th>€ ogni 100 Eternity Stone</th><th>€ ogni 1.000 gemme</th><th></th></tr>`+
+    cfg.packs.map((p,i)=>`<tr><td><input data-p="${i}" data-k="name" value="${esc(p.name)}"></td><td><input type="number" step="0.01" data-p="${i}" data-k="eur" value="${p.eur}"></td><td><input type="number" data-p="${i}" data-k="gems" value="${p.gems}"></td><td><input type="number" min="0" data-p="${i}" data-k="max" value="${p.max||0}"></td><td>${p.gems>0?eur(p.eur/p.gems*100):"—"}</td><td>${p.gems>0&&g?eur(p.eur/p.gems/g*1000):"—"}</td><td><button class="btn" data-delp="${i}">✕</button></td></tr>`).join("");
+}
+$("#packTable").addEventListener("change",e=>{ const i=e.target.dataset.p,k=e.target.dataset.k; if(i==null) return; cfg.packs[i][k]=k==="name"?e.target.value:num(e.target.value); renderPacks(); changed(); });
+$("#packTable").addEventListener("click",e=>{ const d=e.target.dataset.delp; if(d==null) return; cfg.packs.splice(+d,1); renderPacks(); changed(); });
+$("#addPack").onclick=()=>{ cfg.packs.push({name:"Nuovo",eur:0,gems:0,max:0}); renderPacks(); save(); };
+
+function renderConv(){
+  $("#convTable").innerHTML=`<tr><th>Eternity Stone</th><th>Gemme</th><th>Gemme per Eternity Stone</th><th></th></tr>`+
+    cfg.conv.map((c,i)=>`<tr><td><input type="number" data-v="${i}" data-k="stones" value="${c.stones}"></td><td><input type="number" data-v="${i}" data-k="gems" value="${c.gems}"></td><td>${c.stones?fmt(c.gems/c.stones,1):"—"}</td><td><button class="btn" data-delv="${i}">✕</button></td></tr>`).join("");
+}
+$("#convTable").addEventListener("change",e=>{ const i=e.target.dataset.v; if(i==null) return; cfg.conv[i][e.target.dataset.k]=num(e.target.value); renderConv(); renderPacks(); changed(); });
+$("#convTable").addEventListener("click",e=>{ const d=e.target.dataset.delv; if(d==null) return; cfg.conv.splice(+d,1); renderConv(); renderPacks(); changed(); });
+$("#addConv").onclick=()=>{ cfg.conv.push({stones:0,gems:0}); renderConv(); save(); };
+
+$("#exportBtn").onclick=()=>{ $("#jsonBox").value=JSON.stringify(cfg,null,2); };
+$("#importBtn").onclick=()=>{ try{ JSON.parse($("#jsonBox").value); cfg=loadCfg($("#jsonBox").value); save(); renderAll(); $("#jsonBox").value="Importato ✔"; }catch(e){ $("#jsonBox").value="Testo non valido: "+e.message; } };
+$("#defaultsBtn").onclick=()=>{ cfg=clone(DEFAULTS); save(); renderAll(); };
+
+/* =====================================================================
+   NAVIGAZIONE E AVVIO
+   ===================================================================== */
+function showPage(p){
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.p===p));
+  document.querySelectorAll("section.page").forEach(s=>s.classList.toggle("on",s.id==="p-"+p));
+  lsSet(LS_KEY+"-page",p);
+}
+$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; showPage(b.dataset.p); window.scrollTo(0,0); });
+$("#themeBtn").onclick=()=>{
+  const r=document.documentElement, dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;
+  r.dataset.theme=dark?"light":"dark"; lsSet(LS_KEY+"-theme",r.dataset.theme);
+};
+{ const t=lsGet(LS_KEY+"-theme"); if(t) document.documentElement.dataset.theme=t; }
+
+function renderAll(){ renderInputs(); renderSettings(); recalcNow(); }
+renderAll();
+{ const p=lsGet(LS_KEY+"-page"); if(p&&["calc","set","info"].includes(p)) showPage(p); }
+</script>
+</body>
+</html>
