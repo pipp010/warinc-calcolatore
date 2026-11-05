@@ -103,12 +103,15 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.1 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.2 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
     <button data-p="info">ℹ️ Guida</button>
   </nav>
+  <button class="btn" id="saveFileBtn" title="Scarica un file con impostazioni e dati inseriti">💾 Salva configurazione</button>
+  <button class="btn" id="loadFileBtn" title="Carica un file salvato in precedenza">📂 Carica configurazione</button>
+  <input type="file" id="loadFile" accept=".json,application/json" style="display:none">
   <button class="btn" id="themeBtn" title="Cambia tema">◐</button>
 </div></div>
 
@@ -244,7 +247,8 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 
   <div class="card" id="s-io">
     <h2>💾 Backup</h2>
-    <p class="sub">Esporta per salvare il testo o passarlo a qualcun altro; incollalo e premi Importa per caricarlo.</p>
+    <p class="sub">Con <b>💾 Salva configurazione</b> (in alto) scarichi un file <code>.json</code> con tutte le impostazioni e i dati di «Cosa ho / Cosa voglio»; con <b>📂 Carica configurazione</b> lo rileggi, anche su un altro dispositivo. In alternativa puoi copiare/incollare il testo qui sotto.</p>
+    <div class="row" style="margin-bottom:8px"><button class="btn primary" id="saveFileBtn2">💾 Salva configurazione</button><button class="btn" id="loadFileBtn2">📂 Carica configurazione</button><span class="muted" id="fileMsg"></span></div>
     <textarea id="jsonBox" rows="7"></textarea>
     <div class="row" style="margin-top:8px">
       <button class="btn" id="exportBtn">Esporta</button>
@@ -1056,6 +1060,32 @@ $("#convTable").addEventListener("change",e=>{ const i=e.target.dataset.v; if(i=
 $("#convTable").addEventListener("click",e=>{ const d=e.target.dataset.delv; if(d==null) return; cfg.conv.splice(+d,1); renderConv(); renderPacks(); changed(); });
 $("#addConv").onclick=()=>{ cfg.conv.push({stones:0,gems:0}); renderConv(); save(); };
 
+// salva / carica configurazione su file
+function saveConfigFile(){
+  const data={app:"warinc-calcolatore",version:cfg.ver,saved:new Date().toISOString(),settings:cfg,state:ui};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`warinc-configurazione-${isoDate(today())}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  $("#fileMsg").textContent="Configurazione scaricata ✔";
+}
+function loadConfigText(txt){
+  const o=JSON.parse(txt);
+  const settings=o&&o.settings?o.settings:o;          // accetta anche il vecchio formato (solo impostazioni)
+  if(!settings||typeof settings!=="object"||!("sources" in settings||"packs" in settings||"forge" in settings)) throw new Error("non sembra un file del calcolatore");
+  cfg=loadCfg(JSON.stringify(settings)); save();
+  if(o.state&&typeof o.state==="object"){ ui=Object.assign(clone(UI_DEFAULTS),o.state); saveUi(); }
+  renderAll();
+}
+$("#loadFile").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ loadConfigText(rd.result); $("#fileMsg").textContent="Configurazione caricata ✔ ("+f.name+")"; showPage("calc"); }
+                 catch(err){ $("#fileMsg").textContent="File non valido: "+err.message; showPage("set"); } e.target.value=""; };
+  rd.readAsText(f);
+});
+["#saveFileBtn","#saveFileBtn2"].forEach(id=>$(id).onclick=saveConfigFile);
+["#loadFileBtn","#loadFileBtn2"].forEach(id=>$(id).onclick=()=>$("#loadFile").click());
 $("#exportBtn").onclick=()=>{ $("#jsonBox").value=JSON.stringify(cfg,null,2); };
 $("#importBtn").onclick=()=>{ try{ JSON.parse($("#jsonBox").value); cfg=loadCfg($("#jsonBox").value); save(); renderAll(); $("#jsonBox").value="Importato ✔"; }catch(e){ $("#jsonBox").value="Testo non valido: "+e.message; } };
 $("#defaultsBtn").onclick=()=>{ cfg=clone(DEFAULTS); save(); renderAll(); };
