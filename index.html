@@ -99,7 +99,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.2 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.3 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -264,7 +264,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     </ul>
     <h2 style="margin-top:18px">Ruota e Asso carte: fermati ai traguardi</h2>
     <ul>
-      <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. Arriva a 200 giri solo se ti servono le pietre forgia (traguardo 200).</li>
+      <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. La proposta «100+ giri (a oltranza)» continua sulla stessa ruota senza fermarsi: conviene solo se ti servono le pietre forgia del traguardo 200.</li>
       <li>L'Asso carte dà un mitico in più a 10, 30, 60 e 100 carte girate: anche qui conviene fermarsi a 100. Le carte girate a ×5 contano 5.</li>
     </ul>
     <h2 style="margin-top:18px">Da verificare in gioco</h2>
@@ -288,7 +288,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 11,
+  ver: 12,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -300,7 +300,7 @@ const DEFAULTS = {
   },
   discount: { pct:15 },
   sources: [
-    { name:"Ruota", unit:"giri", cost:100, on:true, start:0, cycle:0, stops:"100, 200", scrolls:false,
+    { name:"Ruota", unit:"giri", cost:100, on:true, start:0, cycle:0, stops:"100", continuous:true, scrolls:false,
       rates:{mythic:[{p:.035,c:1},{p:.005,c:2}],legendary:[{p:.15,c:1}],epic:[{p:.16,c:1}],rare:[{p:.40,c:1}],common:[]},
       pool:{mythic:1,legendary:1,epic:1,rare:1,common:1},
       milestones:"10: carta mythic x1 scelta\n25: gemme 500\n50: carta mythic x1 scelta\n100: carta mythic x2 scelta\n200: forgia 500",
@@ -362,7 +362,8 @@ function loadCfg(raw){
   (c.packs||[]).forEach(p=>{ p.name=String(p.name).replace(/\s*pietre$/i,""); });
   if(v<11){ c.free=clone(DEFAULTS.free); if(+c.freeDaily>0) c.free.push({name:"Altre entrate",daily:+c.freeDaily,on:true}); }
   delete c.freeDaily; delete c.funds;
-  c.ver=11;
+  if(v<12) c.sources.forEach(x=>{ if(x.name==="Ruota"){ x.stops="100"; x.continuous=true; } });
+  c.ver=12;
   return c;
 }
 function loadUi(){
@@ -387,7 +388,8 @@ const gg = d => fmt(d)+(d===1?" giorno":" giorni");
 const pct = x => (x>=0?"+":"")+fmt(x*100)+"%";
 const medal = i => ["🥇","🥈","🥉"][i]||String(i+1);
 const num = (v,min=0) => Math.max(min, +v||0);
-const stopLabel=(src,stop)=>{ if(!stop) return ""; const st=parseStops(src.stops), i=st.indexOf(stop), u=src.unit||"tentativi"; return i>0?` · ${st[i-1]}+ ${u} (fino a ${stop})`:` · ${stop} ${u}`; };
+const stopLabel=(src,stop)=>{ const st=parseStops(src.stops), u=src.unit||"tentativi"; if(!stop) return st.length?` · ${st[st.length-1]}+ ${u} (a oltranza)`:""; const i=st.indexOf(stop); return i>0?` · ${st[i-1]}+ ${u} (fino a ${stop})`:` · ${stop} ${u}`; };
+const stopVariants=src=>{ const st=parseStops(src.stops); return st.length?(src.continuous?st.concat(0):st):[0]; };
 const parseStops = s => String(s||"").split(/[,;\s]+/).map(Number).filter(x=>x>0);
 
 /* =====================================================================
@@ -523,7 +525,7 @@ function extractionRows(N,rar,owned){
   if(N<=0) return rows;
   cfg.sources.forEach((src,si)=>{
     if(!src.on) return;
-    const stops=parseStops(src.stops), variants=stops.length?stops:[0], unit=src.unit||"tentativi";
+    const variants=stopVariants(src), unit=src.unit||"tentativi";
     if(src.type==="board"){
       if(rar!=="mythic") return;
       const ms=[false]; if((+src.multi||1)>1&&N>=(+src.multi)) ms.push(true);
@@ -541,9 +543,9 @@ function extractionRows(N,rar,owned){
         const s=withStop(src,stop), r=solve(s,rar,N); if(!r) return;
         const kT=pctl(r.cdf,.5), kB=pctl(r.cdf,.9); if(kT==null) return;
         let k=0; while(k+1<r.cdf.length&&gemCost(s,k+1)<=owned) k++;
-        const fsTxt=fsGained(s,stop||0);
+        const fsMs=parseMilestones(s.milestones).filter(m=>m.type==="fs"), fsTxt=stop?fsGained(s,stop):0;
         rows.push({id:`${si}@${stop}`, src, stop, unit,
-          label:src.name+stopLabel(src,stop)+(stop&&fsTxt?` +${fmt(fsTxt)} pietre forgia a ruota`:""),
+          label:src.name+stopLabel(src,stop)+(stop&&fsTxt?` +${fmt(fsTxt)} pietre forgia a ruota`:"")+(!stop&&fsMs.length?` · +${fmt(fsMs[0].amount)} pietre forgia al giro ${fsMs[0].at}`:""),
           mean:gemCost(s,Math.round(meanOf(r.cdf))), typ:gemCost(s,kT), bad:gemCost(s,kB), nT:kT, nB:kB,
           cycT:stop?Math.ceil(kT/stop):null, cycB:stop?Math.ceil(kB/stop):null, fsT:fsGained(s,kT), fsB:fsGained(s,kB), pOwned:r.cdf[k]||0});
       });
@@ -662,7 +664,7 @@ function renderInputs(){
 function renderModeOptions(){
   const opts=[`<option value="auto">Automatica (la più conveniente)</option>`];
   cfg.sources.forEach((s,i)=>{ if(!s.on) return;
-    const stops=parseStops(s.stops), vs=stops.length?stops:[0], u=s.unit||"tentativi";
+    const vs=stopVariants(s);
     vs.forEach(st=>{
       const suf=stopLabel(s,st);
       if(s.type==="board"){ opts.push(`<option value="${i}@${st}">${esc(s.name)} ×1${suf}</option>`); if((+s.multi||1)>1) opts.push(`<option value="${i}m@${st}">${esc(s.name)} ×${s.multi}${suf}</option>`); }
@@ -804,7 +806,7 @@ function renderTips(c){
   cfg.sources.filter(s=>s.on&&(s.type!=="board"||c.rar==="mythic")).forEach(s=>{
     const a=stopAdvice(s); if(!a) return;
     const fs=a.fs.find(m=>m.at>a.first);
-    add("",`<b>${esc(s.name)}: fermati a ${a.first} ${s.unit||""}.</b> Fino a ${a.first} una copia costa circa ${fmt(a.inCost)} gemme grazie ai traguardi, dopo circa ${fmt(a.outCost)}. ${fs?`Fai «100+ giri» (fino a ${fs.at}) solo se ti servono le pietre forgia (+${fmt(fs.amount)}).`:"Poi aspetta l'evento successivo."}`);
+    add("",`<b>${esc(s.name)}: fermati a ${a.first} ${s.unit||""}.</b> Fino a ${a.first} una copia costa circa ${fmt(a.inCost)} gemme grazie ai traguardi, dopo circa ${fmt(a.outCost)}. ${fs?`Andare oltre (a oltranza) conviene solo se ti servono le pietre forgia del giro ${fs.at} (+${fmt(fs.amount)}).`:"Poi aspetta l'evento successivo."}`);
   });
   if(c.rows.some(r=>r.multi)) add("",`Asso carte: il ×5 <b>non fa risparmiare gemme</b> (stesso costo per carta e per i traguardi) ma rende il risultato più variabile. Serve solo a fare prima.`);
   if(c.rows.some(r=>r.src.scrolls)&&num(ui.scrolls)) add("",`Le tue ${fmt(ui.scrolls)} pergamene valgono ${fmt(ui.scrolls)} evocazioni gratis nell'Evocazione limitata (già conteggiate).`);
@@ -855,9 +857,10 @@ function renderSources(){
     <div class="fields" style="margin-top:12px">
       <div class="field"><label>Nome</label><input data-s="${i}" data-k="name" value="${esc(s.name)}"></div>
       <div class="field"><label>Gemme per tentativo</label><input type="number" data-s="${i}" data-k="cost" value="${s.cost}"></div>
-      <div class="field"><label>Fermati a (es. 100, 200)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
+      <div class="field"><label>Fermati a (es. 100)</label><input data-s="${i}" data-k="stops" value="${esc(s.stops||"")}" placeholder="non fermarti"></div>
       <div class="field"><label>Nome dei tentativi</label><input data-s="${i}" data-k="unit" value="${esc(s.unit||"")}" placeholder="giri"></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="on" ${s.on?"checked":""}> Attiva</label></div>
+      <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="continuous" ${s.continuous?"checked":""}> Proponi anche «a oltranza»</label></div>
       <div class="field"><label class="check"><input type="checkbox" data-s="${i}" data-k="scrolls" ${s.scrolls?"checked":""}> Usa le pergamene</label></div>
     </div>
     <div class="tw" style="margin-top:12px"><table><tr><th>Rarità</th><th>Probabilità × copie</th><th>Pool</th><th>Per il personaggio che vuoi</th></tr>
@@ -891,7 +894,7 @@ $("#srcList").addEventListener("change",e=>{
   const t=e.target,i=t.dataset.s; if(i==null) return; const s=cfg.sources[i];
   if(t.dataset.rate) s.rates[t.dataset.rate]=strToRates(t.value);
   else if(t.dataset.pool) s.pool[t.dataset.pool]=Math.max(1,+t.value||1);
-  else { const k=t.dataset.k; s[k]=(k==="on"||k==="scrolls")?t.checked:(["cost","start","cycle","cards","hits","multi"].includes(k)?num(t.value):t.value); }
+  else { const k=t.dataset.k; s[k]=(k==="on"||k==="scrolls"||k==="continuous")?t.checked:(["cost","start","cycle","cards","hits","multi"].includes(k)?num(t.value):t.value); }
   const open=[...document.querySelectorAll("#srcList details")].map(d=>d.open);
   renderSources(); document.querySelectorAll("#srcList details").forEach((d,j)=>d.open=open[j]);
   changed();
