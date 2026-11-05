@@ -215,18 +215,28 @@ details.box2{border-radius:14px;background:var(--panel)}
 .g3.want{grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,.55fr)}
 @media (max-width:560px){.g3.want{grid-template-columns:1fr 1fr}.g3.want .field:nth-child(2){grid-column:1/-1;order:3}}
 @media (max-width:600px){th,td{padding:7px 8px}.card{padding:15px}.card h3.bigtitle{font-size:20px;margin-top:30px}.card h2{font-size:19px}}
+@media (max-width:700px){
+  .top-in{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 6px;padding:8px 12px}
+  .top h1{font-size:17px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top h1 small{font-size:11px}
+  .top .lbl{display:none}
+  .top .btn{padding:5px 9px;min-height:0;font-size:15px;line-height:1.2}
+  .tabs{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+  .tabs button{padding:6px 4px;font-size:13px;white-space:nowrap}
+  .wrap{padding-top:12px}
+}
 </style>
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v3.5</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v3.6</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
     <button data-p="info">ℹ️ Guida</button>
   </nav>
-  <button class="btn" id="saveFileBtn" title="Scarica un file con impostazioni e dati inseriti">💾 Salva configurazione</button>
-  <button class="btn" id="loadFileBtn" title="Carica un file salvato in precedenza">📂 Carica configurazione</button>
+  <button class="btn" id="saveFileBtn" title="Scarica un file con impostazioni e dati inseriti">💾<span class="lbl"> Salva configurazione</span></button>
+  <button class="btn" id="loadFileBtn" title="Carica un file salvato in precedenza">📂<span class="lbl"> Carica configurazione</span></button>
   <input type="file" id="loadFile" accept=".json,application/json" style="display:none">
   <button class="btn" id="themeBtn" title="Cambia tema">◐</button>
 </div></div>
