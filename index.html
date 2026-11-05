@@ -114,6 +114,10 @@ td input{min-width:76px}
 tr.best td{background:var(--good-soft);font-weight:600}
 .warn.big{font-size:14px;line-height:1.55;margin:12px 0 0;border:1px solid var(--warn-ink)}
 .warn.big ul{margin:6px 0 0;padding-left:20px}
+.flow{margin-top:10px}
+.howbox{margin:14px 0 4px;padding:12px 14px;border-radius:12px;border:1px solid var(--accent);background:var(--accent-soft);font-size:14px;line-height:1.55}
+.howbox ul{margin:6px 0 0;padding-left:20px}
+.howbox li{margin:3px 0}
 .warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:13px;margin:0 0 16px}
 .muted{color:var(--muted);font-size:13px}
 .good{color:var(--good)}.bad{color:var(--bad)}
@@ -129,7 +133,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.7</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.8</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -205,9 +209,10 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 
     <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
-      <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="planTyp"></table></div></div>
-      <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="planBad"></table></div></div>
+      <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="planTyp"></table></div><div class="tw flow"><table id="flowTyp"></table></div></div>
+      <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="planBad"></table></div><div class="tw flow"><table id="flowBad"></table></div></div>
     </div>
+    <div id="planHow"></div>
     <p class="muted" id="planNote"></p>
 
     <h3 id="waitTitle">⏳ Quanto spendi in base a quanto puoi aspettare</h3>
@@ -253,9 +258,10 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
       <p class="muted" id="advPlanNote"></p>
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
-        <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="advPlanTyp"></table></div></div>
-        <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="advPlanBad"></table></div></div>
+        <div><p class="muted" style="margin:0 0 6px"><b class="good">Se va normalmente</b> (basta 1 volta su 2)</p><div class="tw"><table id="advPlanTyp"></table></div><div class="tw flow"><table id="advFlowTyp"></table></div></div>
+        <div><p class="muted" style="margin:0 0 6px"><b class="bad">Se va male</b> (basta 9 volte su 10)</p><div class="tw"><table id="advPlanBad"></table></div><div class="tw flow"><table id="advFlowBad"></table></div></div>
       </div>
+      <div id="advPlanHow"></div>
       <h3>🎯 Truppe</h3>
       <div class="tw"><table id="advGoalTable"></table></div>
     </div>
@@ -910,6 +916,12 @@ function recalcNow(){
   renderRiskWarn(chosen,rows,N);
   renderPlan("#planTyp",sc[0].plan,D+evDays(),sc[0].miss);
   renderPlan("#planBad",sc[1].plan,D+evDays(),sc[1].miss);
+  { const hz=p=>ev&&N>0&&p?(p.HZ!=null?p.HZ:p.H+evDays()):D+evDays();
+    const fl=sc.map(x=>x.need==null||N<=0?null:gemFlow(x.plan,x.need,hz(x.plan)));
+    const whenOf=p=>{ const h=hz(p); return (ev&&N>0?(chosen.src.type==="board"?"all'ultimo evento ":"all'ultima ruota "):"al giorno in cui giochi ")+"("+(h<=0?"oggi":itDate(addDays(h)))+")"; };
+    renderFlow("#flowTyp",fl[0],whenOf(sc[0].plan)); renderFlow("#flowBad",fl[1],whenOf(sc[1].plan));
+    const P=sc[1].plan, steps=ev&&N>0&&P&&P.sched?P.sched.filter(e=>e.spend>0).map(e=>({t:e.t+evDays(),v:e.spend})):[];
+    renderHow("#planHow",{typ:fl[0],bad:fl[1],plan:P,when:whenOf(P),steps}); }
   if(ev&&N>0) renderSchedule(sc,chosen); else { $("#waitTitle").textContent="⏳ Quanto spendi in base a quando inizia l'evento"; renderWait(sc,D); }
   renderExtr(sorted,chosen,N);
   renderMergeTable(mp);
@@ -951,14 +963,57 @@ function renderPlan(id,plan,D,G){
   if(G<=0){ $(id).innerHTML=`<tr><td class="good">Hai già abbastanza gemme 🎉</td></tr>`; return; }
   if(!plan){ $(id).innerHTML=`<tr><td class="muted">Impossibile calcolare: controlla pacchetti e conversioni nelle Impostazioni.</td></tr>`; return; }
   const r=[];
-  if((D>0||ev)&&plan.free>0) r.push([ev?`🏰 Gratis accumulate fino all'ultimo evento (${gg(D)})`:`🏰 Gratis da oggi al giorno in cui giochi (${gg(D)}: QG${otherDaily()?" + altre entrate":""}${activeGems(1)?" + pass attivi":""})`, "—", `${fmt(ev?Math.max(0,Math.min(plan.free,G-Math.ceil(plan.R)-plan.used.reduce((a,u)=>a+u.gems,0))):Math.min(plan.free,G))} gemme`, eur(0)]);
+  if(false) r.push([ev?`🏰 Gratis accumulate fino all'ultimo evento (${gg(D)})`:`🏰 Gratis da oggi al giorno in cui giochi (${gg(D)}: QG${otherDaily()?" + altre entrate":""}${activeGems(1)?" + pass attivi":""})`, "—", `${fmt(ev?Math.max(0,Math.min(plan.free,G-Math.ceil(plan.R)-plan.used.reduce((a,u)=>a+u.gems,0))):Math.min(plan.free,G))} gemme`, eur(0)]);
   plan.used.filter(u=>u.buys>0).forEach(u=>r.push([`📅 ${esc(u.c.name)}`, `${u.buys}×`, `${fmt(u.gems)} gemme${D>0?"":" (solo quelle subito)"}`, eur(u.eur)]));
   plan.bp.gemItems.forEach(x=>r.push([`🎁 ${esc(x.p.name)}${x.p.perDay?`<div class="muted">max ${x.p.perDay} al giorno × ${gg(D+1)} = ${x.p.perDay*(D+1)} disponibili</div>`:""}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} gemme`, eur(x.p.eur*x.q)]));
   plan.bp.r.items.forEach(x=>r.push([`💠 Pacchetto Eternity Stone da ${esc(x.p.name)}`, `${x.q}×`, `${fmt(x.p.gems*x.q)} Eternity Stone`, eur(x.p.eur*x.q)]));
   plan.bp.cp.items.forEach(x=>r.push([`🔁 Converti in gioco ${fmt(x.t.stones)} Eternity Stone → ${fmt(x.t.gems)} gemme`, `${x.q}×`, `${fmt(x.t.gems*x.q)} gemme`, "—"]));
   $(id).innerHTML=`<tr><th>Cosa</th><th>Q.tà</th><th>Ottieni</th><th>€</th></tr>`+
-    (r.length?r.map(x=>`<tr><td class="l">${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("")+`<tr class="best"><td>Totale</td><td></td><td>${fmt(G)} gemme</td><td>${eur(plan.cost)}</td></tr>`
+    (r.length?r.map(x=>`<tr><td class="l">${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join("")+`<tr class="best"><td>Totale da comprare</td><td></td><td>${fmt(plan.used.reduce((a,u)=>a+u.gems,0)+plan.bp.gemsDirect+plan.bp.cp.items.reduce((a,x)=>a+x.t.gems*x.q,0))} gemme</td><td>${eur(plan.cost)}</td></tr>`
      :`<tr><td colspan="4" class="good">Bastano le gemme gratis, non serve comprare niente.</td></tr>`);
+}
+// composizione delle gemme: da dove arrivano (gratis, pass, acquisti) fino al giorno in cui si gioca
+function gemFlow(plan,need,Dh){
+  const own=num(ui.gems), d=Math.max(0,Math.round(Dh||0)), L=[];
+  const add=(icon,name,formula,v,kind)=>{ v=Math.floor(v); if(v>0) L.push({icon,name,formula,v,kind}); };
+  add("💼","Gemme che hai già","oggi",own,"own");
+  add("🏰",`Quartier generale liv. ${ui.hqLevel}`,`${fmt(hqDaily())} al giorno × ${gg(d)}`,hqDaily()*d,"free");
+  (cfg.free||[]).filter(f=>f.on&&num(f.daily)).forEach(f=>add("⚔️",esc(f.name),`${fmt(f.daily)} al giorno × ${gg(d)}`,num(f.daily)*d,"free"));
+  cfg.cards.forEach(c=>{ const l=passLeft(c); if(l>0){ const n=Math.min(d,l); add("📅",`${esc(c.name)} (già attivo)`,`${fmt(c.daily)} al giorno × ${gg(n)}${n<d?" (poi scade)":""}`,c.daily*n,"free"); } });
+  if(plan) plan.used.filter(u=>u.buys>0).forEach(u=>{ const dd=u.c.daily?Math.round((u.gems-u.buys*u.c.upfront)/u.c.daily):0;
+    add("🛒",`${esc(u.c.name)} (da comprare)`,`${u.buys>1?u.buys+" × ":""}${fmt(u.c.upfront)} all'acquisto${dd>0?` + ${fmt(u.c.daily)} al giorno × ${gg(dd)}`:""}`,u.gems,"pass"); });
+  const bought=plan?plan.bp.gemsDirect+plan.bp.cp.items.reduce((s,x)=>s+x.t.gems*x.q,0):0;
+  add("🛒","Gemme comprate","pacchetti nella tabella sopra",bought,"buy");
+  const tot=L.reduce((s,x)=>s+x.v,0);
+  return {L,tot,need:Math.ceil(need||0),left:tot-Math.ceil(need||0),d,free:L.filter(x=>x.kind==="free").reduce((s,x)=>s+x.v,0)};
+}
+function renderFlow(id,f,when){
+  const el=$(id); if(!el) return;
+  if(!f||f.need<=0){ el.innerHTML=""; return; }
+  el.innerHTML=`<tr><th colspan="3" class="l">📥 Da dove arrivano le gemme · da oggi ${when}</th></tr>`+
+    f.L.map(x=>`<tr><td class="l">${x.icon} ${x.name}</td><td class="l muted">${x.formula}</td><td>${fmt(x.v)}</td></tr>`).join("")+
+    `<tr><td class="l"><b>Totale a disposizione</b></td><td></td><td><b>${fmt(f.tot)}</b></td></tr>`+
+    `<tr><td class="l">🎯 Da spendere per l'obiettivo</td><td></td><td>− ${fmt(f.need)}</td></tr>`+
+    `<tr class="best"><td class="l">Avanzano (puoi usarle per altro)</td><td></td><td class="${f.left>0?"good":""}">${fmt(Math.max(0,f.left))}</td></tr>`;
+}
+// riquadro "come comportarti" (basato sull'ipotesi "se va male", la più prudente)
+function renderHow(id,o){
+  const el=$(id); if(!el) return;
+  if(!o||!o.bad||o.bad.need<=0){ el.innerHTML=""; return; }
+  const B=o.bad, T=o.typ, li=[];
+  const daily=[`QG ${fmt(hqDaily())}`].concat((cfg.free||[]).filter(f=>f.on&&num(f.daily)).map(f=>`${esc(f.name)} ~${fmt(f.daily)}`))
+    .concat(cfg.cards.filter(c=>passLeft(c)>0).map(c=>`${esc(c.name)} ${fmt(c.daily)}`))
+    .concat(o.plan?o.plan.used.filter(u=>u.buys>0).map(u=>`${esc(u.c.name)} ${fmt(u.c.daily)}`):[]);
+  const perDay=freeDaily()+cfg.cards.filter(c=>passLeft(c)>0).reduce((s,c)=>s+c.daily,0)+(o.plan?o.plan.used.filter(u=>u.buys>0).reduce((s,u)=>s+u.c.daily,0):0);
+  if(B.d>0) li.push(`<b>Ogni giorno entra e ritira tutto:</b> ${daily.join(" + ")} = circa <b>${fmt(perDay)} gemme al giorno</b>. Se salti giorni, i conti non tornano più.`);
+  if(o.plan) o.plan.used.filter(u=>u.buys>0).forEach(u=>li.push(`Compra il <b>${esc(u.c.name)}</b> <b>subito</b>: le gemme giornaliere contano solo dal giorno in cui lo attivi.`));
+  li.push(`${B.free>0?"<b>Non spendere le gemme gratis per altro:</b> mettile da parte":"<b>Tieni da parte le gemme</b>"} fino ${o.when}. Devi arrivarci con almeno <b>${fmt(B.need)}</b> gemme${T&&T.need<B.need?` (se va normalmente ne bastano ${fmt(T.need)}, ma per sicurezza conta sulla cifra più alta)`:""}.`);
+  if(o.steps&&o.steps.length>1) li.push(`Gemme da avere pronte a ogni evento (se va male): `+o.steps.map(s=>`<b>${fmt(s.v)}</b> ${s.t<=0?"oggi":"il "+itDate(addDays(s.t))}`).join(" · ")+`. Tra un evento e l'altro le gemme gratis ricominciano ad accumularsi: non toccarle.`);
+  if(o.plan) o.plan.bp.gemItems.filter(x=>x.p.perDay>0&&x.q>x.p.perDay).forEach(x=>{ const n=Math.ceil(x.q/x.p.perDay); li.push(`<b>${esc(x.p.name)}</b>: ne servono ${x.q}, massimo ${x.p.perDay} al giorno → inizia a comprarli almeno <b>${gg(n)}</b> prima di giocare.`); });
+  if(o.plan&&o.plan.bp.r.items.length) li.push(`Le Eternity Stone si comprano sul sito e si convertono in gemme in gioco: fallo prima di giocare.`);
+  li.push(B.left>0?`Puoi usare liberamente solo l'avanzo: <b>${fmt(B.left)}</b> gemme anche se va male${T&&T.left>B.left?` (se va normalmente ne avanzano ${fmt(T.left)}, ma lo saprai solo a fine evento)`:""}${o.steps&&o.steps.length>1?". L'avanzo si forma un po' alla volta: usalo solo dopo aver messo da parte le gemme del prossimo evento":""}.`
+    :`Non avanza niente: <b>ogni gemma gratis serve per l'evento</b>.`);
+  el.innerHTML=`<div class="howbox"><b>📌 Come comportarti fino all'evento</b><ul>${li.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
 }
 function renderWait(sc,D){
   if(sc[0].miss==null){ $("#waitTable").innerHTML=""; return; }
@@ -1224,6 +1279,11 @@ function advRecalc(){
   renderPlan("#advPlanTyp",sc[0].plan,0,Math.max(1,sc[0].need-num(ui.gems)));
   renderPlan("#advPlanBad",sc[1].plan,0,Math.max(1,sc[1].need-num(ui.gems)));
   if(sc[0].plan&&sc[0].plan.R<=0) $("#advPlanTyp").innerHTML=`<tr><td class="good">Bastano le gemme gratis e quelle che hai: non serve comprare niente.</td></tr>`;
+  { const hz=p=>p?p.HZ:0, whenOf=p=>{ const h=hz(p); return "all'ultimo evento ("+(h<=0?"oggi":itDate(addDays(h)))+")"; };
+    const fl=sc.map(x=>x.plan?gemFlow(x.plan,x.need,hz(x.plan)):null);
+    renderFlow("#advFlowTyp",fl[0],whenOf(sc[0].plan)); renderFlow("#advFlowBad",fl[1],whenOf(sc[1].plan));
+    const P=sc[1].plan; let prev=0; const steps=P&&P.sched?[...P.sched].sort((a,b)=>a.tp-b.tp).map(e=>{ const v=e.cum-prev; prev=e.cum; return {t:e.tp,v}; }).filter(x=>x.v>0):[];
+    renderHow("#advPlanHow",{typ:fl[0],bad:fl[1],plan:P,when:whenOf(P),steps}); }
   if(sc[1].plan&&sc[1].plan.R<=0) $("#advPlanBad").innerHTML=`<tr><td class="good">Bastano le gemme gratis e quelle che hai: non serve comprare niente.</td></tr>`;
   $("#advGoalTable").innerHTML=`<tr><th>Truppa</th><th>Obiettivo</th><th>Copie L1 da ottenere</th><th>Eventi</th><th>Pietre forgia</th><th>Probabilità di completarla</th></tr>`+
     goals.map((g,gi)=>`<tr><td>${esc(g.name)}</td><td><span class="r-${g.rarity}">${RAR_IT[g.rarity]}</span> · ${g.qty}× L${g.target}</td><td>${fmt(g.N)}</td><td>${evs.filter(e=>e.gi===gi).length}</td><td>${fmt(g.mp.forge)}</td><td class="${S.fin[gi]>=.9?"good":S.fin[gi]<.5?"bad":""}">${g.N<=0?"già fatta":fmt(S.fin[gi]*100,0)+"%"}</td></tr>`).join("");
