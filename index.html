@@ -102,7 +102,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.8 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.9 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -132,7 +132,6 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
       <h2><span class="step">2</span> Cosa voglio</h2>
       <p class="sub">L'obiettivo e i tempi.</p>
       <div class="fields">
-        <div class="field"><label>Personaggio (facoltativo)</label><input id="wName" placeholder="es. Sniper"></div>
         <div class="field"><label>Rarità</label><select id="wRarity"></select></div>
         <div class="field"><label>Livello da raggiungere</label><select id="wTarget"></select></div>
         <div class="field"><label>Quante copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
@@ -659,7 +658,6 @@ function renderInputs(){
   $("#hHq").innerHTML=lv.map(l=>`<option value="${l}" ${l===+ui.hqLevel?"selected":""}>Livello ${l} · ${fmt(cfg.hq.rates[l])} gemme/ora</option>`).join("");
   let g=""; for(let L=1;L<=cfg.maxLevel;L++) g+=`<div class="field"><label>L${L}</label><input type="number" min="0" data-l="${L}" value="${ui.inv[L]||""}" placeholder="0"></div>`;
   $("#hInv").innerHTML=g;
-  $("#wName").value=ui.name||"";
   $("#wRarity").innerHTML=RAR.map(r=>`<option value="${r}" ${ui.rarity===r?"selected":""}>${RAR_IT[r]}</option>`).join("");
   if(+ui.target>cfg.maxLevel) ui.target=cfg.maxLevel;
   let t=""; for(let L=2;L<=cfg.maxLevel;L++) t+=`<option value="${L}" ${+ui.target===L?"selected":""}>Livello ${L} (${fmt(cardsForLevel(L))} carte)</option>`;
@@ -691,7 +689,6 @@ $("#wNow").onchange=e=>{ ui.now=e.target.checked; $("#wDays").disabled=ui.now; s
 $("#hHq").onchange=e=>{ ui.hqLevel=+e.target.value; saveUi(); recalc(); };
 $("#hInv").addEventListener("input",e=>{ const l=e.target.dataset.l; if(!l) return; ui.inv[l]=num(e.target.value); saveUi(); recalc(); });
 $("#invReset").onclick=()=>{ ui.inv={}; saveUi(); renderInputs(); recalc(); };
-$("#wName").oninput=e=>{ ui.name=e.target.value; saveUi(); recalc(); };
 $("#wRarity").onchange=e=>{ ui.rarity=e.target.value; saveUi(); recalc(); };
 $("#wTarget").onchange=e=>{ ui.target=+e.target.value; saveUi(); recalc(); };
 $("#wMode").onchange=e=>{ ui.mode=e.target.value; updateX5Field(); saveUi(); recalc(); };
@@ -704,7 +701,7 @@ function recalc(){ clearTimeout(recalcTimer); recalcTimer=setTimeout(recalcNow,8
 function recalcNow(){
   planCache.clear();
   const rar=ui.rarity, target=Math.min(+ui.target||2,cfg.maxLevel), qty=Math.max(1,ui.qty|0), D=ui.now?0:Math.max(1,num(ui.days,1));
-  const who=ui.name?`<b>${esc(ui.name)}</b> (<span class="r-${rar}">${RAR_IT[rar]}</span>)`:`personaggio <b class="r-${rar}">${RAR_IT[rar]}</b>`;
+  const who=`personaggio <b class="r-${rar}">${RAR_IT[rar]}</b>`;
   const mp=planMerge(ui.inv,target,qty,rar,ui.disc), N=mp.cardsMissing;
   $("#resTitle").innerHTML=`Obiettivo: <b>${qty}</b> ${qty===1?"copia":"copie"} di ${who} a livello <b>${target}</b>, ${D?`entro <b>${gg(D)}</b>`:"<b>subito</b>"}.`;
 
