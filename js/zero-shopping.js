@@ -89,8 +89,24 @@ function renderMergeTable(mp){
     `<tr class="best"><td>Totale</td><td></td><td></td><td>${fmt(mp.merges)} fusioni</td><td></td><td>${fmt(mp.forge)}</td></tr>`;
 }
 function renderGemRank(){
+  renderGuideGems();
   $("#gemRank").innerHTML=`<tr><th>#</th><th>Fonte</th><th>€ ogni 1.000 gemme</th><th>Gemme al mese (max)</th><th class="l">Come</th></tr>`+
     gemSources().map((x,i)=>`<tr${i<3?' class="best"':""}><td>${medal(i)}</td><td>${esc(x.n)}</td><td>${x.v?eur(x.v):"gratis"}</td><td>${isFinite(x.month)?fmt(x.month):"illimitate"}</td><td class="l muted">${x.how}</td></tr>`).join("");
+}
+// guida: tutte le entrate al mese (gratis + pass), senza Eternity Stone e pacchetti
+function renderGuideGems(){
+  const el=$("#guideGems"); if(!el) return;
+  const rows=[{n:`Quartier generale (liv. ${ui.hqLevel})`,f:`${fmt(hqDaily())} al giorno`,g:hqDaily()*30,e:0}]
+    .concat((cfg.free||[]).filter(f=>num(f.gems)>0).map(f=>({n:f.name,f:`${fmt(f.gems)} ${everyTxt(f.every)}`,g:fRate(f)*30,e:0,off:!f.on})))
+    .concat(cfg.cards.filter(c=>c.days>0&&c.upfront+c.daily*c.days>0).map(c=>{ const t=c.upfront+c.daily*c.days, k=30/c.days;
+      return {n:c.name,f:c.upfront?`${fmt(c.upfront)} subito + ${fmt(c.daily)} al giorno`:`${fmt(t)} ogni ${c.days===14?"2 settimane":gg(c.days)}`,g:t*k,e:c.eur*k,off:!c.on}; }))
+    .sort((a,b)=>(a.e>0)-(b.e>0)||(a.e?a.e/a.g-b.e/b.g:b.g-a.g));
+  const sum=(l,k)=>l.filter(r=>!r.off).reduce((s,r)=>s+r[k],0), fr=rows.filter(r=>!r.e), pd=rows.filter(r=>r.e);
+  el.innerHTML=`<tr><th>#</th><th class="l">Fonte</th><th>Ogni quanto</th><th>Gemme al mese</th><th>Costo al mese</th><th>€ ogni 1.000</th></tr>`+
+    rows.map((r,i)=>`<tr${r.off?' class="muted"':""}><td>${i+1}</td><td class="l">${esc(r.n)}${r.off?" (disattivata)":""}</td><td>${r.f}</td><td>${fmt(r.g)}</td><td>${r.e?eur(r.e):"gratis"}</td><td>${r.e?eur(r.e/r.g*1000):"—"}</td></tr>`).join("")+
+    `<tr><td></td><td class="l"><b>Totale gratis</b></td><td></td><td><b>${fmt(sum(fr,"g"))}</b></td><td class="good">gratis</td><td></td></tr>`+
+    `<tr><td></td><td class="l"><b>Totale pass</b></td><td></td><td><b>${fmt(sum(pd,"g"))}</b></td><td><b>${eur(sum(pd,"e"))}</b></td><td>${sum(pd,"g")?eur(sum(pd,"e")/sum(pd,"g")*1000):"—"}</td></tr>`+
+    `<tr class="best"><td></td><td class="l">Totale complessivo</td><td></td><td>${fmt(sum(rows,"g"))}</td><td>${eur(sum(pd,"e"))}</td><td>${sum(rows,"g")?eur(sum(pd,"e")/sum(rows,"g")*1000):"—"}</td></tr>`;
 }
 // costo per copia di una ruota/evento dentro i traguardi e dopo
 function stopAdvice(src){
