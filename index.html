@@ -99,7 +99,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.3 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.4 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -288,7 +288,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 12,
+  ver: 13,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -324,7 +324,7 @@ const DEFAULTS = {
     {name:"14.000", eur:920.99, gems:14000, max:0}
   ],
   conv: [ {stones:100, gems:1000}, {stones:500, gems:5000}, {stones:1000, gems:12000} ],
-  gemPacks: [ {name:"Pacchetto in gioco", eur:5.49, gems:1000, perDay:2, max:0} ],
+  gemPacks: [ {name:"Pacchetto fornitura avanzata", eur:5.49, gems:1000, perDay:2, max:0, extra:"120.000 monete"} ],
   cards: [
     {name:"Carta mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
     {name:"Carta mensile (avanzata)", eur:13.99, upfront:2000, daily:320, days:30, on:true}
@@ -363,7 +363,8 @@ function loadCfg(raw){
   if(v<11){ c.free=clone(DEFAULTS.free); if(+c.freeDaily>0) c.free.push({name:"Altre entrate",daily:+c.freeDaily,on:true}); }
   delete c.freeDaily; delete c.funds;
   if(v<12) c.sources.forEach(x=>{ if(x.name==="Ruota"){ x.stops="100"; x.continuous=true; } });
-  c.ver=12;
+  if(v<13) (c.gemPacks||[]).forEach(p=>{ if(p.name==="Pacchetto in gioco"){ p.name="Pacchetto fornitura avanzata"; p.extra="120.000 monete"; } });
+  c.ver=13;
   return c;
 }
 function loadUi(){
@@ -636,7 +637,7 @@ function gemSources(){
   out.push({n:`Quartier generale (liv. ${ui.hqLevel})`, v:0, month:hqDaily()*30, how:`${fmt(hqDaily())} gemme al giorno, gratis`});
   (cfg.free||[]).filter(f=>f.on&&num(f.daily)).forEach(f=>out.push({n:f.name, v:0, month:num(f.daily)*30, how:`circa ${fmt(f.daily)} gemme al giorno, gratis`}));
   cfg.cards.forEach(c=>{ const t=c.upfront+c.daily*c.days; if(t) out.push({n:c.name, v:c.eur/t*1000, month:t, how:`${fmt(c.upfront)} subito + ${fmt(c.daily)} al giorno · bisogna entrare ogni giorno`}); });
-  cfg.gemPacks.forEach(p=>{ if(p.gems>0) out.push({n:p.name, v:p.eur/p.gems*1000, month:p.perDay?p.perDay*30*p.gems:(p.max?p.max*p.gems:Infinity), how:"in gioco, subito"+(p.perDay?` · max ${p.perDay} al giorno`:"")}); });
+  cfg.gemPacks.forEach(p=>{ if(p.gems>0) out.push({n:p.name, v:p.eur/p.gems*1000, month:p.perDay?p.perDay*30*p.gems:(p.max?p.max*p.gems:Infinity), how:"in gioco, subito"+(p.perDay?` · max ${p.perDay} al giorno`:"")+(p.extra?` · contiene anche ${esc(p.extra)}`:"")}); });
   cfg.packs.forEach(p=>{ if(p.gems>0&&g) out.push({n:`Eternity Stone ${p.name}`, v:p.eur/p.gems/g*1000, month:Infinity, how:"store web · si convertono in gemme in gioco"}); });
   return out.sort((a,b)=>a.v-b.v);
 }
@@ -929,10 +930,10 @@ function renderCards(){
 $("#cardTable").addEventListener("change",e=>{ const i=e.target.dataset.c,k=e.target.dataset.k; if(i==null) return; const c=cfg.cards[i]; c[k]=k==="on"?e.target.checked:(k==="name"?e.target.value:num(e.target.value)); renderCards(); changed(); });
 
 function renderGp(){
-  $("#gpTable").innerHTML=`<tr><th>Nome</th><th>Prezzo €</th><th>Gemme</th><th>Max al giorno</th><th>Max totale</th><th>€ ogni 1.000 gemme</th><th></th></tr>`+
-    cfg.gemPacks.map((p,i)=>`<tr><td><input data-g="${i}" data-k="name" value="${esc(p.name)}"></td><td><input type="number" step="0.01" data-g="${i}" data-k="eur" value="${p.eur}"></td><td><input type="number" data-g="${i}" data-k="gems" value="${p.gems}"></td><td><input type="number" min="0" data-g="${i}" data-k="perDay" value="${p.perDay||0}"></td><td><input type="number" min="0" data-g="${i}" data-k="max" value="${p.max||0}"></td><td>${p.gems>0?eur(p.eur/p.gems*1000):"—"}</td><td><button class="btn" data-delg="${i}">✕</button></td></tr>`).join("");
+  $("#gpTable").innerHTML=`<tr><th>Nome</th><th>Prezzo €</th><th>Gemme</th><th>Contiene anche</th><th>Max al giorno</th><th>Max totale</th><th>€ ogni 1.000 gemme</th><th></th></tr>`+
+    cfg.gemPacks.map((p,i)=>`<tr><td><input data-g="${i}" data-k="name" value="${esc(p.name)}"></td><td><input type="number" step="0.01" data-g="${i}" data-k="eur" value="${p.eur}"></td><td><input type="number" data-g="${i}" data-k="gems" value="${p.gems}"></td><td><input data-g="${i}" data-k="extra" value="${esc(p.extra||"")}" placeholder="—"></td><td><input type="number" min="0" data-g="${i}" data-k="perDay" value="${p.perDay||0}"></td><td><input type="number" min="0" data-g="${i}" data-k="max" value="${p.max||0}"></td><td>${p.gems>0?eur(p.eur/p.gems*1000):"—"}</td><td><button class="btn" data-delg="${i}">✕</button></td></tr>`).join("");
 }
-$("#gpTable").addEventListener("change",e=>{ const i=e.target.dataset.g,k=e.target.dataset.k; if(i==null) return; cfg.gemPacks[i][k]=k==="name"?e.target.value:num(e.target.value); renderGp(); changed(); });
+$("#gpTable").addEventListener("change",e=>{ const i=e.target.dataset.g,k=e.target.dataset.k; if(i==null) return; cfg.gemPacks[i][k]=(k==="name"||k==="extra")?e.target.value:num(e.target.value); renderGp(); changed(); });
 $("#gpTable").addEventListener("click",e=>{ const d=e.target.dataset.delg; if(d==null) return; cfg.gemPacks.splice(+d,1); renderGp(); changed(); });
 $("#addGp").onclick=()=>{ cfg.gemPacks.push({name:"Nuovo",eur:0,gems:0,perDay:0,max:0}); renderGp(); save(); };
 
