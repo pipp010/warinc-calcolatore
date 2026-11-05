@@ -9,7 +9,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 19,
+  ver: 20,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -47,7 +47,7 @@ const DEFAULTS = {
   conv: [ {stones:100, gems:1000}, {stones:500, gems:5000}, {stones:1000, gems:12000} ],
   gemPacks: [ {name:"Pacchetto fornitura avanzata", eur:5.49, gems:1000, perDay:2, max:0, extra:"120.000 monete"} ],
   cards: [
-    {name:"Pass mensile base", eur:4.99, upfront:600, daily:100, days:30, on:true},
+    {name:"Pass mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
     {name:"Pass mensile avanzato", eur:13.99, upfront:2000, daily:320, days:30, on:true},
     // le 1.900 gemme del pass battaglia arrivano salendo di livello: qui sono spalmate sui 14 giorni
     {name:"Pass battaglia premium", eur:4.99, upfront:0, daily:1900/14, days:14, on:true}
@@ -56,9 +56,9 @@ const DEFAULTS = {
   // entrate gratuite: "gems" ogni "every" giorni (1 = al giorno, 7 = a settimana, 14 = ogni 2 settimane)
   free: [
     {name:"Guerra infinita", gems:400, every:1, on:true},
-    {name:"Missioni giornaliere", gems:120, every:1, on:true},
-    {name:"Missioni settimanali", gems:400, every:7, on:true},
-    {name:"Missioni bisettimanali", gems:500, every:14, on:true},
+    {name:"Missioni pass giornaliere", gems:120, every:1, on:true},
+    {name:"Missioni pass settimanali", gems:400, every:7, on:true},
+    {name:"Missioni pass stagionali", gems:500, every:14, on:true},
     {name:"Pass battaglia (ricompense gratis)", gems:510, every:14, on:true},
     {name:"Caccia", gems:500, every:7, on:true},
     {name:"Co-op", gems:600, every:7, on:true},
@@ -104,7 +104,7 @@ function loadCfg(raw){
   if(v<15) (c.cards||[]).forEach(x=>{ if(x.name==="Carta mensile gemme") x.name="Pass mensile gemme"; });
   c.sources.forEach(x=>{ if(/d/.test(String(x.stops||""))&&!(x.every>0)) x.every=30; });
   if(!(c.eventDays>0)) c.eventDays=7;
-  const PASS_REN={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
+  const PASS_REN={"Carta mensile gemme":"Pass mensile gemme","Pass mensile base":"Pass mensile gemme","Carta mensile (avanzata)":"Pass mensile avanzato"};
   (c.cards||[]).forEach(x=>{ if(PASS_REN[x.name]) x.name=PASS_REN[x.name]; });
   (c.free||[]).forEach(f=>{ if(f.gems==null){ f.gems=+f.daily||0; f.every=1; } delete f.daily; if(!(f.every>0)) f.every=1; });
   if(v<18){
@@ -113,10 +113,16 @@ function loadCfg(raw){
     if(!(c.cards||[]).some(x=>/battaglia/i.test(x.name))) c.cards.push(clone(DEFAULTS.cards.find(x=>/battaglia/i.test(x.name))));
   }
   if(v<19) (c.free||[]).forEach(f=>{ if(f.name==="Missioni settimanali"&&!(+f.gems>0)) f.gems=400; });
-  c.ver=19;
+  const FREE_REN={"Missioni giornaliere":"Missioni pass giornaliere","Missioni settimanali":"Missioni pass settimanali","Missioni bisettimanali":"Missioni pass stagionali"};
+  (c.free||[]).forEach(f=>{ if(FREE_REN[f.name]) f.name=FREE_REN[f.name]; });
+  if(v<20){ // stesso ordine dei predefiniti: missioni vicine, clan vicini; le entrate aggiunte a mano restano in fondo
+    const ord=DEFAULTS.free.map(f=>f.name), pos=f=>{ const i=ord.indexOf(f.name); return i<0?999:i; };
+    c.free=(c.free||[]).map((f,i)=>({f,i})).sort((a,b)=>pos(a.f)-pos(b.f)||a.i-b.i).map(x=>x.f);
+  }
+  c.ver=20;
   return c;
 }
-const PASS_REN_UI={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
+const PASS_REN_UI={"Carta mensile gemme":"Pass mensile gemme","Pass mensile base":"Pass mensile gemme","Carta mensile (avanzata)":"Pass mensile avanzato"};
 function loadUi(){
   const u=clone(UI_DEFAULTS);
   try{ const s=lsGet(LS_KEY+"-ui2"); if(s){ const o=JSON.parse(s); Object.assign(u,o); if(u.passes) Object.keys(u.passes).forEach(k=>{ if(PASS_REN_UI[k]){ u.passes[PASS_REN_UI[k]]=u.passes[k]; delete u.passes[k]; } }); if(o.now==null){ u.now=false; if(!o.days) u.days=30; } delete u.risk; return u; } }catch(e){}
