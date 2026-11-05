@@ -102,7 +102,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.7 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.8 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -293,7 +293,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 14,
+  ver: 15,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -331,7 +331,7 @@ const DEFAULTS = {
   conv: [ {stones:100, gems:1000}, {stones:500, gems:5000}, {stones:1000, gems:12000} ],
   gemPacks: [ {name:"Pacchetto fornitura avanzata", eur:5.49, gems:1000, perDay:2, max:0, extra:"120.000 monete"} ],
   cards: [
-    {name:"Carta mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
+    {name:"Pass mensile gemme", eur:4.99, upfront:600, daily:100, days:30, on:true},
     {name:"Carta mensile (avanzata)", eur:13.99, upfront:2000, daily:320, days:30, on:true}
   ],
   hq: { rates:{5:16, 6:18, 7:20} },
@@ -370,7 +370,8 @@ function loadCfg(raw){
   if(v<12) c.sources.forEach(x=>{ if(x.name==="Ruota"){ x.stops="100"; x.continuous=true; } });
   if(v<13) (c.gemPacks||[]).forEach(p=>{ if(p.name==="Pacchetto in gioco"){ p.name="Pacchetto fornitura avanzata"; p.extra="120.000 monete"; } });
   if(v<14) c.sources.forEach(x=>{ if(x.type==="board"){ x.stops="100"; x.continuous=true; } });
-  c.ver=14;
+  if(v<15) (c.cards||[]).forEach(x=>{ if(x.name==="Carta mensile gemme") x.name="Pass mensile gemme"; });
+  c.ver=15;
   return c;
 }
 function loadUi(){
