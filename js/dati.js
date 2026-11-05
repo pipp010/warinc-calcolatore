@@ -9,7 +9,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 18,
+  ver: 19,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -57,7 +57,7 @@ const DEFAULTS = {
   free: [
     {name:"Guerra infinita", gems:400, every:1, on:true},
     {name:"Missioni giornaliere", gems:120, every:1, on:true},
-    {name:"Missioni settimanali", gems:0, every:7, on:true},
+    {name:"Missioni settimanali", gems:400, every:7, on:true},
     {name:"Missioni bisettimanali", gems:500, every:14, on:true},
     {name:"Pass battaglia (ricompense gratis)", gems:510, every:14, on:true},
     {name:"Caccia", gems:500, every:7, on:true},
@@ -112,7 +112,8 @@ function loadCfg(raw){
     DEFAULTS.free.forEach(f=>{ if(!have.has(f.name)) c.free.push(clone(f)); });
     if(!(c.cards||[]).some(x=>/battaglia/i.test(x.name))) c.cards.push(clone(DEFAULTS.cards.find(x=>/battaglia/i.test(x.name))));
   }
-  c.ver=18;
+  if(v<19) (c.free||[]).forEach(f=>{ if(f.name==="Missioni settimanali"&&!(+f.gems>0)) f.gems=400; });
+  c.ver=19;
   return c;
 }
 const PASS_REN_UI={"Carta mensile gemme":"Pass mensile base","Pass mensile gemme":"Pass mensile base","Carta mensile (avanzata)":"Pass mensile avanzato"};
