@@ -84,6 +84,8 @@ th{font-size:12px;color:var(--muted);font-weight:600;background:var(--panel2)}
 td.l,th.l{text-align:left;white-space:normal}
 td input{min-width:76px}
 tr.best td{background:var(--good-soft);font-weight:600}
+.warn.big{font-size:14px;line-height:1.55;margin:12px 0 0;border:1px solid var(--warn-ink)}
+.warn.big ul{margin:6px 0 0;padding-left:20px}
 .warn{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:13px;margin:0 0 16px}
 .muted{color:var(--muted);font-size:13px}
 .good{color:var(--good)}.bad{color:var(--bad)}
@@ -99,7 +101,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v1.4 bozza</small></h1>
+  <h1>War Inc · Calcolatore <small>v1.5 bozza</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -148,6 +150,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
     <p class="sub" id="resTitle"></p>
     <div class="head" id="head"></div>
     <div class="summary" id="summary"></div>
+    <div id="riskWarn"></div>
 
     <h3>💡 Suggerimenti</h3>
     <ul class="tips" id="tips"></ul>
@@ -727,6 +730,7 @@ function recalcNow(){
       </div></div>`;
   }).join("");
 
+  renderRiskWarn(chosen,rows,N);
   renderPlan("#planTyp",sc[0].plan,D,sc[0].miss);
   renderPlan("#planBad",sc[1].plan,D,sc[1].miss);
   renderWait(sc,D);
@@ -736,6 +740,20 @@ function recalcNow(){
   renderTips({N,mp,rows,sorted,chosen,sc,D,rar,target,qty});
 }
 
+function renderRiskWarn(chosen,rows,N){
+  const el=$("#riskWarn");
+  if(!(N>0&&chosen&&chosen.multi)){ el.innerHTML=""; return; }
+  const src=chosen.src, m=+src.multi||5, M=+src.cards||12, worst=M*src.cost*m;
+  const one=rows.find(r=>r.src===src&&!r.multi&&r.stop===chosen.stop);
+  el.innerHTML=`<div class="warn big"><b>⚠️ Attenzione: ${esc(src.name)} ×${m} è più rischioso del ×1.</b>
+    <ul>
+      <li><b>In media costa uguale:</b> ogni carta girata costa ${m} volte tanto ma il mitico vale ${m} copie, e anche per i traguardi conta ${m}.</li>
+      <li><b>Ma fai ${m} volte meno tabelloni</b>, e ognuno è una scommessa: il mitico può uscire alla 1ª carta come alla ${M}ª. Un solo tabellone sfortunato (mitico all'ultima carta) costa <b>${fmt(worst)} gemme</b> e succede 1 volta su ${M}. Con ×1, per essere altrettanto sfortunato devi sbagliare ${m} tabelloni di fila: quasi impossibile.</li>
+      <li>Se a fine evento lasci un tabellone a metà, con ×${m} perdi ${m} volte di più.</li>
+      ${one?`<li>Per il tuo obiettivo, <b>se va male</b>: ×${m} = <b>${fmt(chosen.bad)}</b> gemme, ×1 = <b>${fmt(one.bad)}</b> gemme (${pct(chosen.bad/one.bad-1)}).</li>`:""}
+    </ul>
+    <div style="margin-top:6px">👉 Usa ×${m} solo se vuoi girare meno carte e fare prima: non fa risparmiare gemme.</div></div>`;
+}
 function renderPlan(id,plan,D,G){
   if(G==null){ $(id).innerHTML=`<tr><td class="muted">Nessuna fonte disponibile per questa rarità: controlla le Impostazioni.</td></tr>`; return; }
   if(G<=0){ $(id).innerHTML=`<tr><td class="good">Hai già abbastanza gemme 🎉</td></tr>`; return; }
