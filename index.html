@@ -205,12 +205,14 @@ table.compact th{text-transform:uppercase}
 .warn{border-radius:12px}
 details.box2{border-radius:14px;background:var(--panel)}
 .snav a{border-radius:10px}
+.g3.want{grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,.55fr)}
+@media (max-width:560px){.g3.want{grid-template-columns:1fr 1fr}.g3.want .field:nth-child(2){grid-column:1/-1;order:3}}
 @media (max-width:600px){th,td{padding:7px 8px}.card{padding:15px}.card h3.bigtitle{font-size:20px;margin-top:30px}.card h2{font-size:19px}}
 </style>
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v3.3</small></h1>
+  <h1>War Inc · Calcolatore <small>v3.4</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -248,10 +250,10 @@ details.box2{border-radius:14px;background:var(--panel)}
     <div class="card" id="cardWant">
       <h2><span class="step">2</span> Cosa voglio</h2>
       <p class="sub">L'obiettivo, l'evento e come giocarlo.</p>
-      <div class="g3">
+      <div class="g3 want">
         <div class="field"><label>Rarità</label><select id="wRarity"></select></div>
         <div class="field"><label>Livello da raggiungere</label><select id="wTarget"></select></div>
-        <div class="field"><label>Copie a quel livello</label><input id="wQty" type="number" min="1" placeholder="1"></div>
+        <div class="field"><label title="Quante copie vuoi a quel livello">N° copie</label><input id="wQty" style="text-align:center" type="number" min="1" placeholder="1"></div>
       </div>
       <div class="sect">
         <div class="secthead"><h3>Evento</h3><label class="check"><input type="checkbox" id="wNow"> Già iniziato (subito)</label></div>
