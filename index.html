@@ -129,7 +129,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc · Calcolatore <small>v2.6</small></h1>
+  <h1>War Inc · Calcolatore <small>v2.7</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -324,7 +324,7 @@ code{background:var(--panel2);padding:1px 5px;border-radius:5px}
 
   <div class="card" id="s-io">
     <h2>💾 Backup</h2>
-    <p class="sub">Con <b>💾 Salva configurazione</b> (in alto) scarichi un file <code>.json</code> con tutte le impostazioni e i dati di «Cosa ho / Cosa voglio»; con <b>📂 Carica configurazione</b> lo rileggi, anche su un altro dispositivo. In alternativa puoi copiare/incollare il testo qui sotto.</p>
+    <p class="sub">I dati restano salvati <b>solo in questo browser</b> (memoria locale del sito, non cookie): non vengono inviati a nessun server, e su un altro browser o dispositivo non ci sono. Con <b>💾 Salva configurazione</b> (in alto) scarichi un file <code>.json</code> con tutto: impostazioni, «Cosa ho / Cosa voglio», pianificazione avanzata (truppe ed eventi), pass attivi e tema; con <b>📂 Carica configurazione</b> lo rileggi, anche su un altro dispositivo. In alternativa puoi copiare/incollare il testo qui sotto.</p>
     <div class="row" style="margin-bottom:8px"><button class="btn primary" id="saveFileBtn2">💾 Salva configurazione</button><button class="btn" id="loadFileBtn2">📂 Carica configurazione</button><span class="muted" id="fileMsg"></span></div>
     <textarea id="jsonBox" rows="7"></textarea>
     <div class="row" style="margin-top:8px">
@@ -1385,7 +1385,7 @@ $("#addConv").onclick=()=>{ cfg.conv.push({stones:0,gems:0}); renderConv(); save
 
 // salva / carica configurazione su file
 function saveConfigFile(){
-  const data={app:"warinc-calcolatore",version:cfg.ver,saved:new Date().toISOString(),settings:cfg,state:ui};
+  const data={app:"warinc-calcolatore",version:cfg.ver,saved:new Date().toISOString(),settings:cfg,state:ui,prefs:{theme:lsGet(LS_KEY+"-theme")||"",page:lsGet(LS_KEY+"-page")||"calc"}};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download=`warinc-configurazione-${isoDate(today())}.json`;
@@ -1398,6 +1398,7 @@ function loadConfigText(txt){
   if(!settings||typeof settings!=="object"||!("sources" in settings||"packs" in settings||"forge" in settings)) throw new Error("non sembra un file del calcolatore");
   cfg=loadCfg(JSON.stringify(settings)); save();
   if(o.state&&typeof o.state==="object"){ ui=Object.assign(clone(UI_DEFAULTS),o.state); saveUi(); }
+  if(o.prefs&&o.prefs.theme){ document.documentElement.dataset.theme=o.prefs.theme; lsSet(LS_KEY+"-theme",o.prefs.theme); }
   renderAll();
 }
 $("#loadFile").addEventListener("change",e=>{
