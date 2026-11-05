@@ -226,11 +226,23 @@ details.box2{border-radius:14px;background:var(--panel)}
   .wrap{padding-top:12px}
 }
 @media (max-width:560px){.passrow .check{flex:1 1 100%;white-space:nowrap}.passrow .when{margin-left:26px}}
+.modebar{flex-direction:column;align-items:stretch;gap:6px}
+.modeopt{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.zeroonly{display:none}
+body.zero .zeroonly{display:block}
+body.zero .shop{display:none}
+body.zero #extrTable th:nth-child(8),body.zero #extrTable td:nth-child(8),body.zero #extrTable th:nth-child(9),body.zero #extrTable td:nth-child(9){display:none}
+.cols>*,.summary>*{min-width:0}
+@media (max-width:600px){
+  .plantbl td,.flow td,.plantbl th{white-space:normal}
+  .plantbl td:first-child,.flow td:first-child{min-width:110px}
+  .flow td.muted,.flow td:nth-child(2){font-size:12px}
+}
 </style>
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v3.7</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v3.8</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="set">⚙️ Impostazioni</button>
@@ -245,7 +257,10 @@ details.box2{border-radius:14px;background:var(--panel)}
 <div class="wrap">
 <!-- =================== CALCOLATORE =================== -->
 <section class="page on" id="p-calc">
-  <div class="card modebar"><label class="check"><input type="checkbox" id="advOn"> 🧭 Pianificazione avanzata</label><span class="muted">più truppe e più eventi insieme (es. una truppa nella Ruota e un'altra nell'Asso carte nella stessa settimana)</span></div>
+  <div class="card modebar">
+    <div class="modeopt"><label class="check"><input type="checkbox" id="advOn"> 🧭 Pianificazione avanzata</label><span class="muted">più truppe e più eventi insieme (es. una truppa nella Ruota e un'altra nell'Asso carte nella stessa settimana)</span></div>
+    <div class="modeopt"><label class="check"><input type="checkbox" id="zeroOn"> 🚫 Zero shopping</label><span class="muted">nessun acquisto: calcola solo quando ce la fai con le risorse gratuite del gioco (e i pass già attivi)</span></div>
+  </div>
   <div class="cols" id="calcCols">
     <div class="card">
       <h2><span class="step">1</span> Cosa ho</h2>
@@ -304,10 +319,19 @@ details.box2{border-radius:14px;background:var(--panel)}
     <h3>💡 Suggerimenti</h3>
     <ul class="tips" id="tips"></ul>
 
+    <div class="shop">
     <h3 class="bigtitle">🛒 Cosa comprare</h3>
     <div class="cols">
       <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="planTyp" class="plantbl"></table></div></div>
       <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="planBad" class="plantbl"></table></div></div>
+    </div>
+    </div>
+    <div class="zeroonly">
+    <h3 class="bigtitle">⏳ Tempistiche con le sole risorse gratuite</h3>
+    <div class="cols">
+      <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="zeroTyp" class="plantbl"></table></div></div>
+      <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="zeroBad" class="plantbl"></table></div></div>
+    </div>
     </div>
     <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
     <div class="cols">
@@ -315,10 +339,11 @@ details.box2{border-radius:14px;background:var(--panel)}
       <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw flow"><table id="flowBad"></table></div></div>
     </div>
     <div id="planHow"></div>
+    <div class="shop">
     <p class="muted" id="planNote"></p>
-
     <h3 id="waitTitle">⏳ Quanto spendi in base a quanto puoi aspettare</h3>
     <div class="tw"><table id="waitTable"></table></div>
+    </div>
 
     <h3>🃏 Confronto modalità di estrazione</h3>
     <div class="tw"><table id="extrTable" class="compact"></table></div>
@@ -357,11 +382,17 @@ details.box2{border-radius:14px;background:var(--panel)}
       <h3>📅 Calendario</h3>
       <div class="tw"><table id="advCal"></table></div>
       <p class="muted">Le gemme di ogni evento sono quelle da spendere in quell'evento (si smette appena la truppa è completa). «Truppa completa» = probabilità di averla finita dopo quell'evento.</p>
-      <p class="muted" id="advPlanNote"></p>
+      <p class="muted shop" id="advPlanNote"></p>
+      <div class="shop">
       <h3 class="bigtitle">🛒 Cosa comprare</h3>
       <div class="cols">
         <div><div class="scenhead ok">Se va normalmente <span>basta 1 volta su 2</span></div><div class="tw"><table id="advPlanTyp" class="plantbl"></table></div></div>
         <div><div class="scenhead ko">Se va male <span>basta 9 volte su 10</span></div><div class="tw"><table id="advPlanBad" class="plantbl"></table></div></div>
+      </div>
+      </div>
+      <div class="zeroonly">
+      <h3 class="bigtitle">⏳ Tempistiche con le sole risorse gratuite</h3>
+      <div class="tw"><table id="advZero" class="plantbl"></table></div>
       </div>
       <h3 class="bigtitle">📥 Da dove arrivano le gemme</h3>
       <div class="cols">
@@ -537,7 +568,7 @@ const DEFAULTS = {
   free: [ {name:"Guerra infinita", daily:400, on:true} ],
   eventDays: 7
 };
-const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false, playLast:false, dur:null, adv:false, goals:[], events:[], passes:{}};
+const UI_DEFAULTS = {gems:0, scrolls:0, forge:0, hqLevel:5, inv:{}, name:"", rarity:"mythic", target:6, qty:1, days:30, now:false, mode:"auto", disc:false, x5:false, playLast:false, dur:null, adv:false, zero:false, goals:[], events:[], passes:{}};
 
 const clone = o => JSON.parse(JSON.stringify(o));
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
@@ -962,6 +993,7 @@ function planNoteTxt(Dp,isEv){
   return `ℹ️ Conti fatti per giocare <b>${playTxt()}</b>${isEv?" di ogni evento":` (${Dp<=0?"oggi":itDate(addDays(Dp))})`}. Prima si contano le gemme che hai, quelle gratis (QG, altre entrate, pass già attivi) e quelle dei pass mensili; solo il resto si compra. ${gp?gp+", da oggi fino al giorno in cui giochi.":""}`;
 }
 function tipsHtml(t){
+  if(ui.zero) t=t.filter(x=>!/€|compr|pacchett|eternity/i.test(x.replace(/<[^>]+>/g,"")));
   const good=t.filter(x=>/class="good"/.test(x)), other=t.filter(x=>!/class="good"/.test(x));
   return good.join("")+(other.length?`<li class="more"><details><summary>Mostra altri ${other.length} suggeriment${other.length===1?"o":"i"}</summary><ul class="tips" style="margin-top:8px">${other.join("")}</ul></details></li>`:"");
 }
@@ -977,7 +1009,8 @@ function recalcNow(){
   const rows=extractionRows(N,rar,num(ui.gems));
   rows.forEach(r=>{ const a=planFor(r,"typ",D), b=planFor(r,"bad",D); r.eurT=a?a.cost:Infinity; r.eurB=b?b.cost:Infinity; });
   // percorso migliore = meno euro (se va normalmente), poi meno euro se va male, poi meno gemme
-  const sorted=[...rows].sort((a,b)=>a.eurT-b.eurT||a.eurB-b.eurB||a.typ-b.typ);
+  if(ui.zero) rows.forEach(r=>{ const a=zeroPlan(r,"typ",D), b=zeroPlan(r,"bad",D); r.zT=a.ready==null?1e9:a.ready; r.zB=b.ready==null?1e9:b.ready; });
+  const sorted=ui.zero?[...rows].sort((a,b)=>a.zT-b.zT||a.zB-b.zB||a.typ-b.typ):[...rows].sort((a,b)=>a.eurT-b.eurT||a.eurB-b.eurB||a.typ-b.typ);
   let chosen=ui.mode==="auto"?sorted[0]:rows.find(r=>r.id===String(ui.mode));
   if(!chosen) chosen=sorted[0];
   const ev=!!(chosen&&chosen.stop);
@@ -1028,6 +1061,7 @@ function recalcNow(){
   renderMergeTable(mp);
   renderGemRank();
   renderTips({N,mp,rows,sorted,chosen,sc,D,rar,target,qty});
+  if(ui.zero) renderZeroSimple({chosen,N,D,sc});
 }
 
 // calendario evento per evento (ipotesi "se va male", che comprende anche quella normale)
@@ -1095,7 +1129,7 @@ function renderFlow(id,f,when){
     f.L.map(x=>`<tr><td class="l">${x.icon} ${x.name}</td><td class="l muted">${x.formula}</td><td>${fmt(x.v)}</td></tr>`).join("")+
     `<tr><td class="l"><b>Totale a disposizione</b></td><td></td><td><b>${fmt(f.tot)}</b></td></tr>`+
     `<tr><td class="l">🎯 Da spendere per l'obiettivo</td><td></td><td>− ${fmt(f.need)}</td></tr>`+
-    `<tr class="best"><td class="l">Avanzano (puoi usarle per altro)</td><td></td><td class="${f.left>0?"good":""}">${fmt(Math.max(0,f.left))}</td></tr>`;
+    (f.left<0?`<tr class="best"><td class="l">Mancano</td><td></td><td class="bad">${fmt(-f.left)}</td></tr>`:`<tr class="best"><td class="l">Avanzano (puoi usarle per altro)</td><td></td><td class="${f.left>0?"good":""}">${fmt(Math.max(0,f.left))}</td></tr>`);
 }
 // riquadro "come comportarti" (basato sull'ipotesi "se va male", la più prudente)
 function renderHow(id,o){
@@ -1113,8 +1147,73 @@ function renderHow(id,o){
   if(o.plan) o.plan.bp.gemItems.filter(x=>x.p.perDay>0&&x.q>x.p.perDay).forEach(x=>{ const n=Math.ceil(x.q/x.p.perDay); li.push(`<b>${esc(x.p.name)}</b>: ne servono ${x.q}, massimo ${x.p.perDay} al giorno → inizia a comprarli almeno <b>${gg(n)}</b> prima di giocare.`); });
   if(o.plan&&o.plan.bp.r.items.length) li.push(`Le Eternity Stone si comprano sul sito e si convertono in gemme in gioco: fallo prima di giocare.`);
   li.push(B.left>0?`Puoi usare liberamente solo l'avanzo: <b>${fmt(B.left)}</b> gemme anche se va male${T&&T.left>B.left?` (se va normalmente ne avanzano ${fmt(T.left)}, ma lo saprai solo a fine evento)`:""}${o.steps&&o.steps.length>1?". L'avanzo si forma un po' alla volta: usalo solo dopo aver messo da parte le gemme del prossimo evento":""}.`
-    :`Non avanza niente: <b>ogni gemma gratis serve per l'evento</b>.`);
+    :B.left<0?`Con le sole risorse gratuite <b>mancano ${fmt(-B.left)} gemme</b> entro quella data: guarda le «Tempistiche» per sapere quando ce la fai.`:`Non avanza niente: <b>ogni gemma gratis serve per l'evento</b>.`);
   el.innerHTML=`<div class="howbox"><b>📌 Come comportarti fino all'evento</b><ul>${li.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
+}
+/* =====================================================================
+   ZERO SHOPPING — nessun acquisto, solo tempistiche con le risorse gratuite
+   ===================================================================== */
+const incFree=t=>num(ui.gems)+Math.floor(freeAt(Math.max(0,t)));
+function readyDay(G,from=0){ if(G<=0) return Math.max(0,from); for(let t=Math.max(0,from);t<=3650;t++) if(incFree(t)>=G) return t; return null; }
+const dayTxt=t=>t==null?"mai (servono più di 10 anni)":t<=0?"già adesso":`il ${itDate(addDays(t))} (tra ${gg(t)})`;
+function zeroPlan(row,key,D){
+  const ED=evDays(), need=row?Math.ceil(row[key]||0):0;
+  if(!row||need<=0) return {need:0,ok:true,short:0,ready:D+ED,P:D+ED,have:incFree(D+ED)};
+  if(!row.stop){ const P=D+ED, have=incFree(P), short=Math.max(0,need-have);
+    return {need,P,have,short,ok:short<=0,ready:short<=0?P:readyDay(need,P)}; }
+  const C=Math.max(1,key==="typ"?row.cycT:row.cycB), every=Math.max(1,row.every||30), evs=[]; let j=0, skipped=0;
+  for(let k=1;k<=C;k++){ const cum=Math.min(k*row.perCycle,need); let guard=0;
+    while(incFree(D+j*every+ED)<cum&&guard++<200){ j++; skipped++; }
+    evs.push({k,t:D+j*every,spend:Math.max(0,Math.min(row.perCycle,need-(k-1)*row.perCycle)),cum,have:incFree(D+j*every+ED)}); j++; }
+  const last=evs[evs.length-1];
+  let short=0; for(let k=1;k<=C;k++) short=Math.max(short,Math.min(k*row.perCycle,need)-incFree(D+(k-1)*every+ED));
+  return {need,cycle:true,evs,skipped,C,P:last.t+ED,have:incFree(last.t+ED),short:Math.max(0,short),ok:skipped===0,ready:last.t+ED};
+}
+function zeroTable(z,row){
+  if(!z||z.need<=0) return `<tr><td class="good">Hai già tutto: non servono gemme.</td></tr>`;
+  const nome=row&&row.src.type==="board"?"Evento":"Ruota";
+  if(!z.cycle) return `<tr><th class="l" colspan="2">📆 Un solo evento</th></tr>
+    <tr><td class="l">Gemme da spendere</td><td>${fmt(z.need)}</td></tr>
+    <tr><td class="l">Gemme che avrai il giorno in cui giochi (${z.P<=0?"oggi":itDate(addDays(z.P))})</td><td>${fmt(z.have)}</td></tr>
+    <tr><td class="l">Esito</td><td class="${z.ok?"good":"bad"}"><b>${z.ok?"✅ Ce la fai":"❌ Mancano "+fmt(z.short)+" gemme"}</b></td></tr>
+    <tr class="best"><td class="l">Con le sole gratis le avresti</td><td>${dayTxt(z.ok?readyDay(z.need):z.ready)}</td></tr>${z.ok?"":`<tr><td class="l muted" colspan="2">Troppo tardi per questo evento: senza acquisti punta al primo evento uguale dopo quella data, oppure scegli Ruota/Asso carte «100» e fai un evento alla volta.</td></tr>`}`;
+  return `<tr><th class="l">${nome}</th><th>Quando</th><th>Spendi</th><th>Gemme gratis pronte</th></tr>`+
+    z.evs.map(e=>`<tr><td class="l">${nome} ${e.k}</td><td>${e.t<=0?"subito":itDate(addDays(e.t))}</td><td>${fmt(e.spend)}</td><td>${fmt(e.have-(e.cum-e.spend))}</td></tr>`).join("")+
+    `<tr><td class="l" colspan="3">${z.skipped?`${nome==="Ruota"?"Ruote":"Eventi"} da saltare per accumulare gemme`:"Nessun"+(nome==="Ruota"?"a ruota":" evento")+" da saltare"}</td><td class="${z.skipped?"bad":"good"}">${z.skipped?fmt(z.skipped):"✅"}</td></tr>`+
+    `<tr class="best"><td class="l" colspan="3">Truppa completa con le sole gratis</td><td>${dayTxt(z.ready)}</td></tr>`;
+}
+function renderZeroSimple(o){
+  const {chosen,N,D,sc}=o, ev=!!(chosen&&chosen.stop);
+  const zs=["typ","bad"].map(k=>N>0&&chosen?zeroPlan(chosen,k,D):null);
+  $("#summary").innerHTML=zs.map((z,i)=>{ const ok=i===0, s=sc[i];
+    return `<div class="scen ${ok?"ok":"ko"}"><h4>${ok?"Se va normalmente":"Se va male"}</h4><div class="hint">${ok?"basta 1 volta su 2":"basta 9 volte su 10 — sei tranquillo"}</div>
+      <div class="kv"><div>Copie L1 da ottenere</div><div>${fmt(N)}</div>
+        <div>Gemme da spendere in tutto</div><div>${fmt(z?z.need:0)}</div>
+        ${z&&z.cycle?`<div>${chosen.src.type==="board"?"Eventi":"Ruote"} da fare / da saltare</div><div>${fmt(z.C)} / ${fmt(z.skipped)}</div>`:""}
+        <div>Gemme che mancano all'evento</div><div class="${z&&z.short>0?"bad":"good"}">${fmt(z?z.short:0)}</div>
+        <div>Pietre forgia mancanti</div><div class="${s.forgeMiss>0?"bad":"good"}">${fmt(s.forgeMiss)}</div>
+        <div>Pronto con le sole gratis</div><div class="big" style="font-size:18px">${z?(z.ready<=0?"già adesso":itDate(addDays(z.ready))):"—"}</div>
+      </div></div>`; }).join("");
+  $("#zeroTyp").innerHTML=zeroTable(zs[0],chosen); $("#zeroBad").innerHTML=zeroTable(zs[1],chosen);
+  const when=z=>(ev?(chosen.src.type==="board"?"all'ultimo evento ":"all'ultima ruota "):"al giorno in cui giochi ")+"("+(z.P<=0?"oggi":itDate(addDays(z.P)))+")";
+  const fl=zs.map(z=>z?gemFlow(null,z.need,z.P):null);
+  renderFlow("#flowTyp",fl[0],zs[0]?when(zs[0]):""); renderFlow("#flowBad",fl[1],zs[1]?when(zs[1]):"");
+  const steps=zs[1]&&zs[1].cycle?zs[1].evs.map(e=>({t:e.t+evDays(),v:e.spend})):[];
+  renderHow("#planHow",zs[1]?{typ:fl[0],bad:fl[1],plan:null,when:when(zs[1]),steps}:null);
+}
+function renderZeroAdv(sc,evs){
+  const rows=sc.map(s=>{ const sched=s.plan?s.plan.sched:[]; let short=0; sched.forEach(e=>{ short=Math.max(short,e.cum-incFree(e.tp)); }); return {short,ready:readyDay(Math.ceil(s.need)),H:sched.reduce((m,e)=>Math.max(m,e.tp),0),need:Math.ceil(s.need),sched}; });
+  $("#advSummary").querySelectorAll(".scen").forEach((el,i)=>{ const r=rows[i], kv=el.querySelector(".kv"); if(!kv) return; const d=kv.children;
+    d[2].textContent="Gemme che mancano agli eventi"; d[3].textContent=fmt(r.short); d[3].className=r.short>0?"bad":"good";
+    d[6].textContent="Tutte le gemme pronte con le sole gratis"; d[7].textContent=r.ready==null?"—":r.ready<=0?"già adesso":itDate(addDays(r.ready)); d[7].className="big"; d[7].style.fontSize="18px"; });
+  const B=rows[1], T=rows[0];
+  $("#advZero").innerHTML=`<tr><th class="l">Evento</th><th>Quando giochi</th><th>Gemme che servono (normale / male)</th><th>Gemme gratis pronte</th><th>Esito se va male</th></tr>`+
+    B.sched.map((e,i)=>{ const have=incFree(e.tp), te=T.sched[i]||e, ok=have>=e.cum, okT=have>=te.cum, ev=evs[i];
+      return `<tr><td class="l">${esc(ev.p.src.name)}</td><td>${e.tp<=0?"oggi":itDate(addDays(e.tp))}</td><td>${fmt(te.cum)} / ${fmt(e.cum)}</td><td>${fmt(have)}</td><td class="${ok?"good":okT?"":"bad"}">${ok?"✅ ok":okT?"⚠️ solo se va bene":"❌ mancano "+fmt(e.cum-have)}</td></tr>`; }).join("");
+  const fl=rows.map(r=>gemFlow(null,r.need,r.H)), whenA=r=>"all'ultimo evento ("+(r.H<=0?"oggi":itDate(addDays(r.H)))+")";
+  renderFlow("#advFlowTyp",fl[0],whenA(T)); renderFlow("#advFlowBad",fl[1],whenA(B));
+  let prev=0; const steps=B.sched.map(e=>{ const v=e.cum-prev; prev=e.cum; return {t:e.tp,v}; }).filter(x=>x.v>0);
+  renderHow("#advPlanHow",{typ:fl[0],bad:fl[1],plan:null,when:whenA(B),steps});
 }
 function renderWait(sc,D){
   if(sc[0].miss==null){ $("#waitTable").innerHTML=""; return; }
@@ -1403,10 +1502,11 @@ function advRecalc(){
   if(Object.values(ui.passes||{}).some(v=>v>0)) add("","I pass già attivi sono contati: le gemme giornaliere fino alla scadenza sono gratis, il rinnovo si paga solo dopo.");
   if(forgeMiss>0) add("bad",`Ti mancano circa <b>${fmt(forgeMiss)}</b> pietre forgia per tutte le fusioni.`);
   $("#advTips").innerHTML=tipsHtml(t);
+  if(ui.zero) renderZeroAdv(sc,evs);
 }
 function applyAdvVisibility(){
   const on=!!ui.adv;
-  $("#advOn").checked=on;
+  $("#advOn").checked=on; $("#zeroOn").checked=!!ui.zero; document.body.classList.toggle("zero",!!ui.zero);
   $("#advSection").style.display=on?"":"none";
   $("#cardWant").style.display=on?"none":"";
   $("#cardRes").style.display=on?"none":"";
@@ -1416,6 +1516,7 @@ function applyAdvVisibility(){
   if(on) renderAdvForms();
 }
 $("#advPlay").onchange=e=>{ ui.playLast=e.target.value==="last"; $("#wPlay").value=e.target.value; saveUi(); recalc(); };
+$("#zeroOn").onchange=e=>{ ui.zero=e.target.checked; saveUi(); applyAdvVisibility(); recalc(); };
 $("#advOn").onchange=e=>{ ui.adv=e.target.checked; saveUi(); applyAdvVisibility(); recalc(); };
 
 const ratesToStr=a=>(a||[]).map(e=>`${+(e.p*100).toFixed(4)}%x${e.c}`).join(" + ");
