@@ -16,7 +16,7 @@ $("#themeBtn").onclick=()=>{
 };
 { const t=lsGet(LS_KEY+"-theme"); if(t) document.documentElement.dataset.theme=t; }
 
-function renderAll(){ renderInputs(); renderSettings(); recalcNow(); }
+function renderAll(){ renderInputs(); renderSettings(); recalcNow(); renderTierList(); }
 renderAll();
 showPage("calc");   // all'avvio si apre sempre il Calcolatore
 
