@@ -119,7 +119,7 @@ function tlRowView(e){
   return `<div class="tlrow">
     <img src="img/truppe/${t.slug}.webp" alt="" width="56" height="56" loading="lazy">
     <div class="tlmain"><div class="tname"><span class="r-${t.rarity}">${esc(t.name)}</span>${e.s4?` <span class="s4b">2ª abilità al Lv4</span>`:""}</div>
-      <div class="tlv">Livello ${e.lv}${e.n>1?" × "+e.n:""} · ${fmt(cardsForLevel(e.lv)*e.n)} copie</div>${e.note?`<div class="tnote">${esc(e.note)}</div>`:""}</div>
+      <div class="tlv">Livello ${e.lv}${e.n>1?" × "+e.n:""}</div>${e.note?`<div class="tnote">${esc(e.note)}</div>`:""}</div>
     <div class="tlchips"><div>${chips}</div>${inv?`<div>${inv}</div>`:""}</div></div>`;
 }
 function tlRowEdit(e,i){
@@ -145,10 +145,9 @@ function renderTierList(){
     body=`<div class="card">${TL.list.map(tlRowEdit).join("")||`<p class="muted">Lista vuota.</p>`}<button class="btn primary" data-act="add" style="margin-top:10px">＋ Aggiungi personaggio</button></div>`;
   } else {
     const F=[{k:"all",ico:"",lab:"Tutti"}].concat(TL_FIELDS,TL_INV), L=TL.list.filter(e=>tlFilter==="all"||e[tlFilter]);
-    const tot=L.reduce((s,e)=>s+cardsForLevel(e.lv)*e.n,0);
     body=`<nav class="ginav">${F.map(f=>`<a href="#" data-act="filter" data-k="${f.k}" class="${tlFilter===f.k?"on":""}">${f.ico} ${f.lab}</a>`).join("")}</nav>
       <div class="card">${L.map(tlRowView).join("")||`<p class="muted">${TL.list.length?"Nessun personaggio per questo filtro.":"La lista è ancora vuota: premi «✏️ Modifica» per crearla."}</p>`}
-      ${L.length?`<p class="muted" style="margin:10px 0 0">${L.length} ${L.length===1?"personaggio":"personaggi"} · in tutto ${fmt(tot)} copie singole.</p>`:""}</div>`;
+      ${L.length?`<p class="muted" style="margin:10px 0 0">${L.length} ${L.length===1?"personaggio":"personaggi"}.</p>`:""}</div>`;
   }
   el.innerHTML=bar+body;
 }
