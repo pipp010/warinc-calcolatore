@@ -6,11 +6,11 @@
 <title>War Inc Calcolatore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5.8">
+<link rel="stylesheet" href="css/style.css?v=5.9">
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.8</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.9</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="mine" hidden>⛏️ Miniera</button><!-- miniera nascosta: da riattivare togliendo hidden -->
@@ -303,7 +303,7 @@
 
 <!-- =================== GUIDA =================== -->
 <section class="page" id="p-info">
-  <nav class="ginav"><a href="#g-scopo">🎯 A cosa serve</a><a href="#g-mese">📅 In un mese</a><a href="#g-resa">💎 Poca spesa, tanta resa</a><a href="#tutorial">📖 Tutorial</a><a href="#g-sapere">ℹ️ Da sapere</a></nav>
+  <nav class="ginav"><a href="#g-scopo">🎯 A cosa serve</a><a href="#g-resa">💎 Poca spesa, tanta resa</a><a href="#g-mese">📅 In un mese</a><a href="#g-fondamentali">⭐ Fondamentali</a><a href="#tutorial">📖 Tutorial</a><a href="#g-sapere">ℹ️ Da sapere</a></nav>
   <div class="card" id="g-scopo">
     <h2>🎯 A cosa serve questo calcolatore</h2>
     <p class="lead">In War Inc Rising, per crescere servono le <b>gemme</b>: c'è poco da girarci intorno. Truppe mitiche, livelli e fusioni passano tutti da lì.</p>
@@ -313,6 +313,13 @@
       <div><span>2</span><b>Quante ne puoi avere</b>Una stima di quante gemme metti da parte entro un evento: solo gratis, oppure spendendo poco.</div>
       <div><span>3</span><b>Come spenderle</b>Per la truppa che vuoi: quale evento conviene, quante gemme servono e cosa comprare (se serve) al prezzo più basso.</div>
     </div>
+  </div>
+
+  <div class="card" id="g-resa">
+    <h2>💎 Poca spesa, tanta resa</h2>
+    <p class="sub">La strategia migliore per fare gemme: ritira tutte le entrate gratuite e, se vuoi spendere, prendi solo i pass, che costano molto meno dei pacchetti. Qui trovi quante gemme entrano in un mese (30 giorni) da ogni fonte. Esclusi Eternity Stone e Pacchetti fornitura avanzata. I valori seguono le Impostazioni e il livello del QG che hai indicato.</p>
+    <div class="tw"><table id="guideGems" class="plantbl"></table></div>
+    <p class="muted">Le entrate settimanali e bisettimanali sono riportate a 30 giorni (es. 1.000 ogni 2 settimane ≈ 2.143 al mese). Il pass battaglia premium dura 14 giorni: in un mese se ne comprano circa 2,1.</p>
   </div>
 
   <div class="card" id="g-mese">
@@ -328,16 +335,31 @@
     <ul>
       <li><b>Eternity Stone e Pacchetti fornitura avanzata</b>: 5,50–7 € ogni 1.000 gemme, contro 1,21–2,63 € dei pass. Usali solo se ti manca poco e non puoi aspettare.</li>
       <li><b>Andare oltre i 100 giri alla Ruota</b>: dopo l'ultimo traguardo ogni copia costa circa il doppio. Meglio aspettare la ruota del mese dopo.</li>
-      <li><b>Evocazione limitata</b>: i mitici in palio sono 3, quindi per la truppa che vuoi una copia costa circa 2.400 gemme, il doppio di Ruota e Asso carte.</li>
+      <li><b>Evocazione limitata</b>: i mitici in palio sono 3, quindi per la truppa che vuoi una copia costa circa 2.500 gemme, il doppio di Ruota e Asso carte.</li>
       <li><b>Spendere le gemme accantonate per altro</b>: se ne togli anche poche, all'evento non ti bastano più.</li>
     </ul>
   </div>
 
-  <div class="card" id="g-resa">
-    <h2>💎 Poca spesa, tanta resa</h2>
-    <p class="sub">La strategia migliore per fare gemme: ritira tutte le entrate gratuite e, se vuoi spendere, prendi solo i pass, che costano molto meno dei pacchetti. Qui trovi quante gemme entrano in un mese (30 giorni) da ogni fonte. Esclusi Eternity Stone e Pacchetti fornitura avanzata. I valori seguono le Impostazioni e il livello del QG che hai indicato.</p>
-    <div class="tw"><table id="guideGems" class="plantbl"></table></div>
-    <p class="muted">Le entrate settimanali e bisettimanali sono riportate a 30 giorni (es. 1.000 ogni 2 settimane ≈ 2.143 al mese). Il pass battaglia premium dura 14 giorni: in un mese se ne comprano circa 2,1.</p>
+  <div class="card" id="g-fondamentali">
+    <h2>⭐ Le cose fondamentali da sapere</h2>
+    <h3>Squadra equilibrata: i mitici forti già al livello 4</h3>
+    <ul>
+      <li>Non tutti i mitici sono uguali: alcuni sbloccano la <b>seconda abilità al livello 4</b>, altri solo al <b>livello 6</b>.</li>
+      <li>Mentre stai crescendo, quelli che la sbloccano al 4 sono preziosissimi: danno il meglio di sé con <b>8 copie</b> invece di 32.</li>
+      <li><b>Tienili al livello 4</b> e portali più su solo quando anche il resto della squadra è all'altezza. Un mitico al 6 o al 7 circondato da truppe deboli è come un campione in una squadra di dilettanti: da solo non vince la partita.</li>
+      <li>Meglio una squadra che cresce tutta insieme che puntare tutte le gemme su un solo mitico. Con le gemme di una truppa a livello 6 ne porti quattro al livello 4.</li>
+    </ul>
+    <h3>Ruota e Asso carte: fermati ai traguardi</h3>
+    <ul>
+      <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. La proposta «100+ giri (a oltranza)» continua sulla stessa ruota senza fermarsi: conviene solo se ti servono le pietre forgia del traguardo 200.</li>
+      <li>L'Asso carte dà un mitico in più a 10, 30, 60, 100 e 200 carte girate: anche qui conviene fermarsi a 100 («Asso carte · 100 carte»); «100+ carte (a oltranza)» continua senza fermarsi. Scegliendo l'Asso carte compare la casella «Estrazione ×5»: le carte girate a ×5 contano 5, ma il risultato è più rischioso.</li>
+    </ul>
+    <h3>Evocazione limitata: solo con le pergamene</h3>
+    <ul>
+      <li>I mitici in palio sono <b>3</b>: la probabilità di trovare proprio quello che vuoi è un terzo del totale, quindi una copia costa circa <b>2.500 gemme</b>, il doppio di Ruota e Asso carte.</li>
+      <li><b>Evoca solo con le pergamene, mai con le gemme</b>: le gemme rendono molto di più nella Ruota e nell'Asso carte.</li>
+      <li><b>Non serve partecipare ogni settimana.</b> Salta una o due evocazioni e accumula pergamene: partecipa solo quando almeno <b>2 dei 3 mitici</b> ti interessano e hai <b>molte pergamene</b> da usare. Così le copie non si disperdono su truppe che non userai.</li>
+    </ul>
   </div>
 
   <div class="card" id="tutorial">
@@ -465,23 +487,11 @@
       <li>Il calcolatore simula migliaia di volte tutto il calendario: per ogni evento ti dice quante gemme spendere se va normalmente o male, la probabilità di aver completato la truppa, e cosa comprare per arrivare carico con le gemme condivise.</li>
       <li>In «Cosa ho» indica se i pass (mensili o battaglia premium) sono già attivi: le gemme dell'acquisto non si contano e il rinnovo parte dalla scadenza.</li>
     </ul>
-    <h3>Squadra equilibrata: i mitici forti già al livello 4</h3>
-    <ul>
-      <li>Non tutti i mitici sono uguali: alcuni sbloccano la <b>seconda abilità al livello 4</b>, altri solo al <b>livello 6</b>.</li>
-      <li>Mentre stai crescendo, quelli che la sbloccano al 4 sono preziosissimi: danno il meglio di sé con <b>8 copie</b> invece di 32.</li>
-      <li><b>Tienili al livello 4</b> e portali più su solo quando anche il resto della squadra è all'altezza. Un mitico al 6 o al 7 circondato da truppe deboli è come un campione in una squadra di dilettanti: da solo non vince la partita.</li>
-      <li>Meglio una squadra che cresce tutta insieme che puntare tutte le gemme su un solo mitico. Con le gemme di una truppa a livello 6 ne porti quattro al livello 4.</li>
-    </ul>
     <h3>Cosa vogliono dire le due ipotesi</h3>
     <ul>
       <li><b>Se va normalmente</b>: metà dei giocatori spende meno di così, metà di più.</li>
       <li><b>Se va male</b>: 9 giocatori su 10 ce la fanno entro questa cifra. Se ti prepari per questa, sei tranquillo.</li>
       <li><b>Rischio</b>: quanto si spende in più se va male.</li>
-    </ul>
-    <h3>Ruota e Asso carte: fermati ai traguardi</h3>
-    <ul>
-      <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. La proposta «100+ giri (a oltranza)» continua sulla stessa ruota senza fermarsi: conviene solo se ti servono le pietre forgia del traguardo 200.</li>
-      <li>L'Asso carte dà un mitico in più a 10, 30, 60, 100 e 200 carte girate: anche qui conviene fermarsi a 100 («Asso carte · 100 carte»); «100+ carte (a oltranza)» continua senza fermarsi. Scegliendo l'Asso carte compare la casella «Estrazione ×5»: le carte girate a ×5 contano 5, ma il risultato è più rischioso.</li>
     </ul>
   </div>
 </section>
@@ -494,13 +504,13 @@
   <div class="dlgbtns"><button class="btn" id="guideDlgClose">Chiudi</button><button class="btn primary" id="guideDlgGo">📖 Vai alla guida</button></div>
 </dialog>
 
-<script src="js/dati.js?v=5.8"></script>
-<script src="js/calcoli.js?v=5.8"></script>
-<script src="js/calcolatore.js?v=5.8"></script>
-<script src="js/zero-shopping.js?v=5.8"></script>
-<script src="js/impostazioni.js?v=5.8"></script>
-<script src="js/avanzata.js?v=5.8"></script>
-<script src="js/miniera.js?v=5.8"></script>
-<script src="js/avvio.js?v=5.8"></script>
+<script src="js/dati.js?v=5.9"></script>
+<script src="js/calcoli.js?v=5.9"></script>
+<script src="js/calcolatore.js?v=5.9"></script>
+<script src="js/zero-shopping.js?v=5.9"></script>
+<script src="js/impostazioni.js?v=5.9"></script>
+<script src="js/avanzata.js?v=5.9"></script>
+<script src="js/miniera.js?v=5.9"></script>
+<script src="js/avvio.js?v=5.9"></script>
 </body>
 </html>
