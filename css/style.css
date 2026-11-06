@@ -352,3 +352,11 @@ ol.marks li::before{content:counter(mk);position:absolute;left:0;top:3px;width:2
 .fmsums{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
 .fmsum{display:flex;gap:8px;align-items:center;font-size:13px}.fmsum img{width:36px;height:36px;border-radius:7px}
 .fmsaved{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+
+/* ===== Banner installazione app ===== */
+.instbar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;max-width:1088px;margin:12px auto 0;padding:10px 14px;border:1px solid var(--accent);border-radius:14px;background:var(--accent-soft);box-sizing:border-box;width:calc(100% - 32px)}
+.instbar[hidden]{display:none}
+.instbar img{border-radius:9px;flex:none}
+.instbar>div{flex:1;min-width:180px;display:grid;gap:2px;font-size:13.5px;line-height:1.4}
+.instbar>div b{font-size:14.5px}
+.instbtns{display:flex;gap:8px;margin-left:auto}

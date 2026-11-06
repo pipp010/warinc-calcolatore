@@ -32,3 +32,21 @@ addEventListener("hashchange",()=>{ if(fmWanted()){ fmReveal(); showPage("form")
   $("#guideDlgGo").onclick=()=>{ close(); showPage("info"); window.scrollTo(0,0); };
   dlg.addEventListener("cancel",()=>{ if($("#guideDlgHide").checked) lsSet(LS_KEY+"-noguide","1"); });   // tasto Esc
   if(lsGet(LS_KEY+"-noguide")!=="1"&&dlg.showModal) dlg.showModal(); }
+
+/* ===== Installazione come app (banner in alto) ===== */
+if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+{
+  const bar=$("#instBar"), KEY=LS_KEY+"-noinstall";
+  const installed=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  let evt=null;
+  const show=()=>{ if(!installed&&lsGet(KEY)!=="1") bar.hidden=false; };
+  const hide=()=>{ bar.hidden=true; };
+  // Chrome, Edge, Android: il browser ci dà l'evento e il tasto apre la sua finestra di installazione
+  addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); evt=e; show(); });
+  addEventListener("appinstalled",()=>{ hide(); lsSet(KEY,"1"); });
+  // iPhone/iPad: Safari non permette di chiederlo, spieghiamo come fare
+  if(ios&&!installed){ $("#instTxt").innerHTML="Tocca <b>Condividi</b> <span aria-hidden=\"true\">⬆️</span> in basso e poi <b>«Aggiungi alla schermata Home»</b>."; $("#instGo").hidden=true; $("#instNo").textContent="Ho capito"; show(); }
+  $("#instGo").onclick=async()=>{ if(!evt) return; evt.prompt(); const r=await evt.userChoice.catch(()=>null); evt=null; hide(); if(r&&r.outcome==="dismissed") lsSet(KEY,"1"); };
+  $("#instNo").onclick=()=>{ hide(); lsSet(KEY,"1"); };
+}

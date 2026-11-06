@@ -7,13 +7,17 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/icona/favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="img/icona/favicon-64.png">
 <link rel="apple-touch-icon" href="img/icona/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c96442">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="War Inc Calc">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=6.9">
+<link rel="stylesheet" href="css/style.css?v=7.0">
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v6.9</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v7.0</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="mine" hidden>⛏️ Miniera</button><!-- miniera nascosta: da riattivare togliendo hidden -->
@@ -27,6 +31,12 @@
   <input type="file" id="loadFile" accept=".json,application/json" style="display:none">
   <button class="btn" id="themeBtn" title="Cambia tema">◐</button>
 </div></div>
+
+<div class="instbar" id="instBar" hidden>
+  <img src="img/icona/favicon-64.png" alt="" width="36" height="36">
+  <div><b>Installa l'app</b><span id="instTxt">Aprila dalla schermata Home, come un'app vera, anche senza connessione.</span></div>
+  <span class="instbtns"><button class="btn primary" id="instGo">Installa</button><button class="btn" id="instNo">No grazie</button></span>
+</div>
 
 <div class="wrap">
 <!-- =================== CALCOLATORE =================== -->
@@ -524,15 +534,15 @@
   <div class="dlgbtns"><button class="btn" id="guideDlgClose">Chiudi</button><button class="btn primary" id="guideDlgGo">📖 Vai alla guida</button></div>
 </dialog>
 
-<script src="js/dati.js?v=6.9"></script>
-<script src="js/calcoli.js?v=6.9"></script>
-<script src="js/calcolatore.js?v=6.9"></script>
-<script src="js/zero-shopping.js?v=6.9"></script>
-<script src="js/impostazioni.js?v=6.9"></script>
-<script src="js/avanzata.js?v=6.9"></script>
-<script src="js/miniera.js?v=6.9"></script>
-<script src="js/tierlist.js?v=6.9"></script>
-<script src="js/formazioni.js?v=6.9"></script>
-<script src="js/avvio.js?v=6.9"></script>
+<script src="js/dati.js?v=7.0"></script>
+<script src="js/calcoli.js?v=7.0"></script>
+<script src="js/calcolatore.js?v=7.0"></script>
+<script src="js/zero-shopping.js?v=7.0"></script>
+<script src="js/impostazioni.js?v=7.0"></script>
+<script src="js/avanzata.js?v=7.0"></script>
+<script src="js/miniera.js?v=7.0"></script>
+<script src="js/tierlist.js?v=7.0"></script>
+<script src="js/formazioni.js?v=7.0"></script>
+<script src="js/avvio.js?v=7.0"></script>
 </body>
 </html>
