@@ -233,3 +233,43 @@ body.zero #extrTable th:nth-child(8),body.zero #extrTable td:nth-child(8),body.z
   .plantbl td:first-child,.flow td:first-child{min-width:110px}
   .flow td.muted,.flow td:nth-child(2){font-size:12px}
 }
+/* «Ottieni» nelle tabelle Cosa comprare: va a capo invece di far scorrere la tabella */
+#planTyp td:nth-child(3),#planBad td:nth-child(3),#advPlanTyp td:nth-child(3),#advPlanBad td:nth-child(3){white-space:normal}
+/* nomi completi nelle entrate gratuite */
+#freeTable td:nth-child(2) input{min-width:250px}
+/* ===== Guida ===== */
+.ginav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.ginav a{padding:6px 12px;border:1px solid var(--line2);border-radius:999px;background:var(--panel);color:var(--ink);text-decoration:none;font-size:13.5px}
+.ginav a:hover{border-color:var(--accent);color:var(--accent)}
+#p-info .card{scroll-margin-top:80px}
+.lead{font-size:16px;line-height:1.6;margin:0 0 10px}
+.aims{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.aims>div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;line-height:1.45;font-size:14px}
+.aims b{display:block;font-family:var(--serif);font-size:17px;margin:6px 0 4px}
+.aims span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px}
+.tstep{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+.tstep h3{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:19px;text-transform:none;letter-spacing:0;color:var(--ink);margin:0 0 12px}
+.shot{margin:0 0 12px}
+.shot img{display:block;max-width:100%;height:auto;border:1px solid var(--line2);border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);background:#fdfcf9}
+.tside{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.tside .shot img{margin:0 auto}
+ol.marks{list-style:none;counter-reset:mk;padding:0;margin:0 0 8px}
+ol.marks li{counter-increment:mk;position:relative;padding:4px 0 8px 40px;line-height:1.5}
+ol.marks li::before{content:counter(mk);position:absolute;left:0;top:3px;width:26px;height:26px;border-radius:50%;background:#e0482f;color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center}
+@media (max-width:760px){.aims,.tside{grid-template-columns:1fr}.lead{font-size:15px}}
+@media (max-width:640px){
+  #monthTbl tr:first-child{display:none}
+  #monthTbl,#monthTbl tbody,#monthTbl tr,#monthTbl td{display:block;width:auto}
+  #monthTbl tr{border-bottom:1px solid var(--line);padding:8px 0}
+  #monthTbl tr:last-child{border-bottom:0}
+  #monthTbl td{text-align:left;border:0;padding:3px 14px;white-space:normal}
+  #monthTbl td:nth-child(2)::before{content:"Gemme al mese: ";color:var(--muted)}
+  #monthTbl td:nth-child(3)::before{content:"Come: ";color:var(--muted)}
+  #monthTbl td:nth-child(4)::before{content:"Risultato: ";color:var(--muted)}
+}
+.gfreq{display:none;font-size:12px}
+@media (max-width:640px){
+  #guideGems th:nth-child(1),#guideGems td:nth-child(1),#guideGems th:nth-child(3),#guideGems td:nth-child(3),#guideGems th:nth-child(6),#guideGems td:nth-child(6){display:none}
+  #guideGems td,#guideGems th{white-space:normal;padding:7px 8px}
+  #guideGems .gfreq{display:block}
+}

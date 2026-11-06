@@ -6,11 +6,11 @@
 <title>War Inc Calcolatore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5.0">
+<link rel="stylesheet" href="css/style.css?v=5.2">
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.0</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.2</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="mine" hidden>⛏️ Miniera</button><!-- miniera nascosta: da riattivare togliendo hidden -->
@@ -302,50 +302,190 @@
 
 <!-- =================== GUIDA =================== -->
 <section class="page" id="p-info">
-  <div class="card">
-    <h2>Come si usa</h2>
-    <ol>
-      <li>In <b>Cosa ho</b> inserisci gemme, pergamene, pietre forgia, livello del QG e le copie della truppa che possiedi.</li>
-      <li>In <b>Cosa voglio</b> scegli rarità, livello, quante copie a quel livello e in quanti giorni (oppure «Subito»).</li>
-      <li>Ogni evento ha una data di inizio e una di fine (di default 7 giorni dopo). Scegli se fare i conti per giocare il <b>primo giorno</b> (arrivi già carico: contano solo le gemme e gli acquisti fino a quel giorno, quindi al massimo 2 pacchetti fornitura avanzata se giochi oggi) oppure l'<b>ultimo giorno</b> (contano anche le gemme guadagnate e i pacchetti comprati durante l'evento).</li>
-      <li>Con Ruota e Asso carte «fermati a 100» le gemme servono un evento alla volta: tra un evento e l'altro (di default 30 giorni, si cambia nelle Impostazioni) accumuli gemme gratis. Il calcolatore mostra il calendario evento per evento e quanto comprare in tutto. Se gli eventi necessari non ci stanno nei giorni che hai indicato, te lo segnala.</li>
-      <li>Sotto trovi sempre due ipotesi: <b>se va normalmente</b> e <b>se va male</b>, con quante gemme servono, quante mancano, cosa comprare e quanto costa.</li>
-    </ol>
-    <h2 style="margin-top:18px">Pianificazione avanzata</h2>
+  <nav class="ginav"><a href="#g-scopo">🎯 A cosa serve</a><a href="#g-mese">📅 In un mese</a><a href="#g-resa">💎 Poca spesa, tanta resa</a><a href="#tutorial">📖 Tutorial</a><a href="#g-sapere">ℹ️ Da sapere</a></nav>
+  <div class="card" id="g-scopo">
+    <h2>🎯 A cosa serve questo calcolatore</h2>
+    <p class="lead">In War Inc Rising, per crescere servono le <b>gemme</b>: c'è poco da girarci intorno. Truppe mitiche, livelli e fusioni passano tutti da lì.</p>
+    <p class="lead">Ma le gemme da sole non bastano: vanno <b>spese con la testa</b>. Con le stesse 30.000 gemme puoi completare quasi una truppa mitica oppure ritrovarti con poche copie sparse. Dipende da dove, quando e come le spendi.</p>
+    <div class="aims">
+      <div><span>1</span><b>Da dove arrivano le gemme</b>Tutte le fonti, gratis e a pagamento, e quanto rende ognuna.</div>
+      <div><span>2</span><b>Quante ne puoi avere</b>Una stima di quante gemme metti da parte entro un evento: solo gratis, oppure spendendo poco.</div>
+      <div><span>3</span><b>Come spenderle</b>Per la truppa che vuoi: quale evento conviene, quante gemme servono e cosa comprare (se serve) al prezzo più basso.</div>
+    </div>
+  </div>
+
+  <div class="card" id="g-mese">
+    <h2>📅 Cosa puoi ottenere in un mese</h2>
+    <p class="sub">Esempi con le impostazioni predefinite (QG livello 5), una Ruota e un Asso carte al mese. Sono valori medi: le copie vanno alla truppa in palio in quell'evento.</p>
+    <div class="tw"><table class="plantbl" id="monthTbl">
+      <tr><th class="l">Se spendi</th><th>Gemme al mese</th><th class="l">Come spenderle con la testa</th><th class="l">Risultato medio</th></tr>
+      <tr><td class="l"><b>0 €</b><br><span class="muted">solo entrate gratuite</span></td><td>~42.800</td><td class="l">1 Ruota fermandoti a 100 giri (~9.500 gemme)<br>+ 1 Asso carte fermandoti a 100 carte (~25.000 gemme)</td><td class="l"><b>~27 copie mitiche</b> (8 + 19)<br><span class="muted">e ~8.000 gemme di scorta per quando va male</span></td></tr>
+      <tr><td class="l"><b>18,98 €</b><br><span class="muted">pass mensile gemme + avanzato</span></td><td>~58.000</td><td class="l">1 Ruota a 100 giri<br>+ Asso carte oltre le 100 carte (~48.000 gemme)</td><td class="l"><b>~40 copie mitiche</b><br><span class="muted">dall'Asso carte arrivano ~32 copie: una truppa mitica a livello 6 in un solo evento</span></td></tr>
+      <tr><td class="l"><b>29,67 €</b><br><span class="muted">tutti i pass</span></td><td>~62.000</td><td class="l">Come sopra, con più margine: l'Asso carte fino alle 32 copie anche se va male (50.000 gemme)</td><td class="l"><b>truppa mitica a livello 6 sicura</b><br><span class="muted">+ ~8 copie dalla Ruota</span></td></tr>
+    </table></div>
+    <h3>Cosa invece fa sprecare gemme (o soldi)</h3>
+    <ul>
+      <li><b>Eternity Stone e Pacchetti fornitura avanzata</b>: 5,50–7 € ogni 1.000 gemme, contro 1,21–2,63 € dei pass. Usali solo se ti manca poco e non puoi aspettare.</li>
+      <li><b>Andare oltre i 100 giri alla Ruota</b>: dopo l'ultimo traguardo ogni copia costa circa il doppio. Meglio aspettare la ruota del mese dopo.</li>
+      <li><b>Evocazione limitata</b>: i mitici in palio sono 3, quindi per la truppa che vuoi una copia costa circa 2.400 gemme, il doppio di Ruota e Asso carte.</li>
+      <li><b>Spendere le gemme accantonate per altro</b>: se ne togli anche poche, all'evento non ti bastano più.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="g-resa">
+    <h2>💎 Poca spesa, tanta resa</h2>
+    <p class="sub">La strategia migliore per fare gemme: ritira tutte le entrate gratuite e, se vuoi spendere, prendi solo i pass, che costano molto meno dei pacchetti. Qui trovi quante gemme entrano in un mese (30 giorni) da ogni fonte. Esclusi Eternity Stone e Pacchetti fornitura avanzata. I valori seguono le Impostazioni e il livello del QG che hai indicato.</p>
+    <div class="tw"><table id="guideGems" class="plantbl"></table></div>
+    <p class="muted">Le entrate settimanali e bisettimanali sono riportate a 30 giorni (es. 1.000 ogni 2 settimane ≈ 2.143 al mese). Il pass battaglia premium dura 14 giorni: in un mese se ne comprano circa 2,1.</p>
+  </div>
+
+  <div class="card" id="tutorial">
+    <h2>📖 Tutorial: come si usa</h2>
+    <p class="sub">Un esempio completo, passo per passo (modalità normale, senza pianificazione avanzata). Nell'esempio hai <b>8.000 gemme</b>, il QG al livello 6 e qualche copia della truppa; vuoi <b>1 truppa mitica a livello 6</b> e l'evento inizia tra 10 giorni. I numeri rossi nelle immagini corrispondono ai punti dell'elenco.</p>
+
+    <div class="tstep">
+      <h3><span class="step">1</span> La barra in alto</h3>
+      <figure class="shot"><a href="img/guida/passo01.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo01.png" alt="Barra in alto con pagine, salva, tema e zero shopping" loading="lazy" width="1100" height="228"></a></figure>
+      <ol class="marks">
+        <li><b>Pagine</b>: Calcolatore (dove si fanno i conti), Impostazioni (valori del gioco) e questa Guida.</li>
+        <li><b>Salva / Carica</b>: scarica un file con tutti i tuoi dati e lo ricarica. I dati restano comunque salvati nel browser; il file serve per cambiare telefono o PC.</li>
+        <li><b>Tema</b> chiaro o scuro.</li>
+        <li><b>Zero shopping</b>: nessun acquisto, solo le date in cui ce la fai con le gemme gratis (vedi il passo 10). La pianificazione avanzata per ora lasciala spenta.</li>
+      </ol>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">2</span> Cosa ho</h3>
+      <div class="tside">
+        <figure class="shot"><a href="img/guida/passo02.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo02.png" alt="Scheda Cosa ho" loading="lazy" width="566" height="649"></a></figure>
+        <ol class="marks">
+          <li><b>Gemme</b> che hai adesso. Se hai pergamene o pietre forgia, scrivi anche quelle.</li>
+          <li><b>Livello del Quartier generale</b>: decide quante gemme produce ogni ora.</li>
+          <li><b>Pass già attivi</b>: spunta quelli che hai e scrivi tra quanti giorni scadono. Così il calcolatore conta le loro gemme giornaliere e non te li fa ricomprare.</li>
+          <li><b>Copie della truppa che hai già</b>, per livello: L1 sono le copie singole, L2 quelle già fuse una volta e così via.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">3</span> Cosa voglio</h3>
+      <div class="tside">
+        <figure class="shot"><a href="img/guida/passo03.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo03.png" alt="Scheda Cosa voglio" loading="lazy" width="566" height="649"></a></figure>
+        <ol class="marks">
+          <li><b>Obiettivo</b>: rarità, livello e quante copie a quel livello. Un mitico a livello 6 vale 32 copie L1.</li>
+          <li><b>Quando inizia l'evento</b>: tra quanti giorni, oppure la data. Se è già iniziato spunta «Già iniziato».</li>
+          <li><b>Primo o ultimo giorno</b>: col primo arrivi già carico; con l'ultimo contano anche le gemme che guadagni durante l'evento.</li>
+          <li><b>Modalità di estrazione</b>: lascia «Automatica» e il calcolatore sceglie la più conveniente. Puoi anche scegliere tu Ruota, Asso carte o Evocazione.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">4</span> Il risultato</h3>
+      <figure class="shot"><a href="img/guida/passo04.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo04.png" alt="Riepilogo del risultato con le due ipotesi" loading="lazy" width="1062" height="510"></a></figure>
+      <ol class="marks">
+        <li><b>Riepilogo</b>: quante copie mancano, quante fusioni e pietre forgia servono e il percorso scelto. Qui la Ruota fermandosi a 100 giri, una ruota ogni 30 giorni.</li>
+        <li><b>Se va normalmente</b>: basta 1 volta su 2.</li>
+        <li><b>Se va male</b>: basta 9 volte su 10. È la cifra su cui prepararsi.</li>
+      </ol>
+      <p>In questo esempio servono 3–4 ruote e <b>0 €</b>: con un po' di pazienza, le gemme gratis bastano.</p>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">5</span> Suggerimenti</h3>
+      <figure class="shot"><a href="img/guida/passo05.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo05.png" alt="Suggerimenti" loading="lazy" width="1062" height="187"></a></figure>
+      <p>Consigli costruiti sulla tua situazione: il percorso più economico, se le gemme gratis bastano tra un evento e l'altro, quando conviene fermarsi. «Mostra altri suggerimenti» apre il resto.</p>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">6</span> Cosa comprare</h3>
+      <p>Se le gemme non bastano, il calcolatore elenca cosa comprare dal più conveniente al meno conveniente. Per far vedere la tabella piena qui l'esempio cambia: l'evento è <b>già iniziato</b> e scegli l'<b>Asso carte a oltranza</b> per avere tutto subito.</p>
+      <figure class="shot"><a href="img/guida/passo06.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo06.png" alt="Tabelle Cosa comprare" loading="lazy" width="1062" height="865"></a></figure>
+      <ol class="marks">
+        <li><b>Totale da comprare</b> se va male: gemme ed euro. Compra seguendo la tabella dall'alto: prima i pass, poi i pacchetti, per ultimi gli Eternity Stone.</li>
+      </ol>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">7</span> Quanto spendi in base a quanto puoi aspettare</h3>
+      <figure class="shot"><a href="img/guida/passo07.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo07.png" alt="Spesa in base all'attesa" loading="lazy" width="1062" height="386"></a></figure>
+      <ol class="marks">
+        <li><b>Subito</b>: lo stesso obiettivo costa 145–175 €.</li>
+        <li><b>Aspettando 30 giorni</b> bastano le gemme gratis.</li>
+      </ol>
+      <p>La pazienza è la strategia più economica. Questa tabella compare solo quando c'è qualcosa da comprare.</p>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">8</span> Da dove arrivano le gemme e come comportarti</h3>
+      <div class="tside">
+        <figure class="shot"><a href="img/guida/passo08.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo08.png" alt="Composizione delle gemme e istruzioni" loading="lazy" width="862" height="1036"></a></figure>
+        <ol class="marks">
+          <li><b>Composizione</b>: ogni fonte moltiplicata per i giorni che mancano, il totale, quanto serve per l'obiettivo e quanto avanza. Gli avanzi li puoi usare per altro.</li>
+          <li><b>Come comportarti</b>: cosa ritirare ogni giorno e ogni settimana, quante gemme mettere da parte e per quando. Seguilo alla lettera: se salti giorni o spendi le gemme accantonate, i conti non tornano più.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">9</span> Confronto modalità di estrazione</h3>
+      <figure class="shot"><a href="img/guida/passo09.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo09.png" alt="Confronto modalità di estrazione" loading="lazy" width="1060" height="342"></a></figure>
+      <ol class="marks">
+        <li><b>La più conveniente</b> è in cima. Per ogni modalità vedi gemme ed euro se va normalmente e se va male, il rischio, quanti eventi servono e la data dell'ultimo.</li>
+      </ol>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">10</span> Zero shopping</h3>
+      <figure class="shot"><a href="img/guida/passo10.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo10.png" alt="Risultato in modalità zero shopping" loading="lazy" width="1062" height="787"></a></figure>
+      <p>Spunta <b>🚫 Zero shopping</b> in cima al Calcolatore: spariscono acquisti e pass, e il calcolatore ti dice solo quando ce la fai con le risorse gratuite.</p>
+      <ol class="marks">
+        <li><b>Pronto con le sole gratis</b>: il giorno in cui avrai tutte le gemme che servono.</li>
+      </ol>
+    </div>
+
+    <div class="tstep">
+      <h3><span class="step">11</span> Impostazioni: le tue entrate gratuite</h3>
+      <div class="tside">
+        <figure class="shot"><a href="img/guida/passo11.png" target="_blank" title="Apri l'immagine a grandezza piena"><img src="img/guida/passo11.png" alt="Impostazioni delle gemme gratis" loading="lazy" width="1100" height="1195"></a></figure>
+        <ol class="marks">
+          <li><b>Entrate gratuite</b>: gemme e ogni quanti giorni arrivano. Togli la spunta a quelle che non fai (per esempio le ricompense di clan se non sei in un clan) e correggi i valori se il gioco cambia. Tutti i calcoli si aggiornano da soli.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="g-sapere">
+    <h2>ℹ️ Da sapere</h2>
+    <h3>Pianificazione avanzata</h3>
     <ul>
       <li>Attiva <b>🧭 Pianificazione avanzata</b> in cima al Calcolatore per pianificare più truppe e più eventi insieme.</li>
       <li>Aggiungi le truppe che vuoi (livello, copie, copie già possedute) e gli eventi: tipo, per quale truppa, quando inizia e come giocarlo (fermati a 100 o a oltranza, ×5 per l'Asso carte).</li>
       <li>Il calcolatore simula migliaia di volte tutto il calendario: per ogni evento ti dice quante gemme spendere se va normalmente o male, la probabilità di aver completato la truppa, e cosa comprare per arrivare carico con le gemme condivise.</li>
       <li>In «Cosa ho» indica se i pass (mensili o battaglia premium) sono già attivi: le gemme dell'acquisto non si contano e il rinnovo parte dalla scadenza.</li>
     </ul>
-    <h2 style="margin-top:18px">Cosa vogliono dire le due ipotesi</h2>
+    <h3>Cosa vogliono dire le due ipotesi</h3>
     <ul>
       <li><b>Se va normalmente</b>: metà dei giocatori spende meno di così, metà di più.</li>
       <li><b>Se va male</b>: 9 giocatori su 10 ce la fanno entro questa cifra. Se ti prepari per questa, sei tranquillo.</li>
       <li><b>Rischio</b>: quanto si spende in più se va male.</li>
     </ul>
-    <h2 style="margin-top:18px">Ruota e Asso carte: fermati ai traguardi</h2>
+    <h3>Ruota e Asso carte: fermati ai traguardi</h3>
     <ul>
       <li>La Ruota dà 4 mitici nei traguardi dei primi 100 giri (10, 50, 100) e rimborsa 500 gemme al 25°. Dopo il 100° una copia costa circa il doppio: conviene fermarsi e aspettare la ruota successiva. La proposta «100+ giri (a oltranza)» continua sulla stessa ruota senza fermarsi: conviene solo se ti servono le pietre forgia del traguardo 200.</li>
       <li>L'Asso carte dà un mitico in più a 10, 30, 60, 100 e 200 carte girate: anche qui conviene fermarsi a 100 («Asso carte · 100 carte»); «100+ carte (a oltranza)» continua senza fermarsi. Scegliendo l'Asso carte compare la casella «Estrazione ×5»: le carte girate a ×5 contano 5, ma il risultato è più rischioso.</li>
     </ul>
   </div>
-  <div class="card">
-    <h2>💎 Poca spesa, tanta resa</h2>
-    <p class="sub">La strategia migliore per fare gemme: ritira tutte le entrate gratuite e, se vuoi spendere, prendi solo i pass, che costano molto meno dei pacchetti. Qui trovi quante gemme entrano in un mese (30 giorni) da ogni fonte. Esclusi Eternity Stone e Pacchetti fornitura avanzata. I valori seguono le Impostazioni e il livello del QG che hai indicato.</p>
-    <div class="tw"><table id="guideGems" class="plantbl"></table></div>
-    <p class="muted">Le entrate settimanali e bisettimanali sono riportate a 30 giorni (es. 1.000 ogni 2 settimane ≈ 2.143 al mese). Il pass battaglia premium dura 14 giorni: in un mese se ne comprano circa 2,1.</p>
-  </div>
 </section>
 </div>
 
-<script src="js/dati.js?v=5.0"></script>
-<script src="js/calcoli.js?v=5.0"></script>
-<script src="js/calcolatore.js?v=5.0"></script>
-<script src="js/zero-shopping.js?v=5.0"></script>
-<script src="js/impostazioni.js?v=5.0"></script>
-<script src="js/avanzata.js?v=5.0"></script>
-<script src="js/miniera.js?v=5.0"></script>
-<script src="js/avvio.js?v=5.0"></script>
+<script src="js/dati.js?v=5.2"></script>
+<script src="js/calcoli.js?v=5.2"></script>
+<script src="js/calcolatore.js?v=5.2"></script>
+<script src="js/zero-shopping.js?v=5.2"></script>
+<script src="js/impostazioni.js?v=5.2"></script>
+<script src="js/avanzata.js?v=5.2"></script>
+<script src="js/miniera.js?v=5.2"></script>
+<script src="js/avvio.js?v=5.2"></script>
 </body>
 </html>
