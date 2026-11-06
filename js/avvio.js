@@ -19,7 +19,12 @@ $("#themeBtn").onclick=()=>{
 function renderAll(){ renderInputs(); renderSettings(); recalcNow(); renderTierList(); }
 renderAll();
 // all'avvio si apre sempre il Calcolatore; la sezione nascosta Formazioni si apre con #formazioni nell'indirizzo
-if(location.hash==="#formazioni"){ $('#tabs [data-p="form"]').hidden=false; showPage("form"); } else showPage("calc");
+// (funziona con #formazioni o ?formazioni, anche cambiando l'indirizzo a pagina già aperta; dopo la prima volta la scheda resta visibile in questo browser)
+const fmWanted=()=>/formazioni/i.test(location.hash+location.search);
+const fmReveal=()=>{ $('#tabs [data-p="form"]').hidden=false; lsSet(LS_KEY+"-showform","1"); };
+if(lsGet(LS_KEY+"-showform")==="1") $('#tabs [data-p="form"]').hidden=false;
+if(fmWanted()){ fmReveal(); showPage("form"); } else showPage("calc");
+addEventListener("hashchange",()=>{ if(fmWanted()){ fmReveal(); showPage("form"); window.scrollTo(0,0); } });
 
 // messaggio di benvenuto: suggerisce la guida a ogni avvio, finché non si spunta «Non mostrare più»
 { const dlg=$("#guideDlg"), close=()=>{ if($("#guideDlgHide").checked) lsSet(LS_KEY+"-noguide","1"); dlg.close(); };
