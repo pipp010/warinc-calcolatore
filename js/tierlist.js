@@ -54,7 +54,36 @@ const TROOPS=[
   {slug:"ironguard",name:"Ironguard",rarity:"legendary",cls:"difensore",attr:"fisico"},
   {slug:"windlord",name:"Windlord",rarity:"legendary",cls:"mago",attr:"vento"},
   {slug:"elven-archer",name:"Elven Archer",rarity:"legendary",cls:"arciere",attr:"fisico"},
-  {slug:"great-axe-warrior",name:"Great Axe Warrior",rarity:"legendary",cls:"guerriero",attr:"terra"}
+  {slug:"great-axe-warrior",name:"Great Axe Warrior",rarity:"legendary",cls:"guerriero",attr:"terra"},
+  {slug:"rock-thrower",name:"Rock Thrower",rarity:"epic",cls:"guerriero",attr:"terra"},
+  {slug:"poison-master",name:"Poison Master",rarity:"epic",cls:"mago",attr:"acqua"},
+  {slug:"snowman-warrior",name:"Snowman Warrior",rarity:"epic",cls:"supporto",attr:"acqua"},
+  {slug:"flame-mage",name:"Flame Mage",rarity:"epic",cls:"mago",attr:"fuoco"},
+  {slug:"oracle",name:"Oracle",rarity:"epic",cls:"supporto",attr:"fuoco"},
+  {slug:"soul-usher",name:"Soul Usher",rarity:"epic",cls:"supporto",attr:"acqua"},
+  {slug:"bone-warlock",name:"Bone Warlock",rarity:"epic",cls:"supporto",attr:"vento"},
+  {slug:"pumpkin-guard",name:"Pumpkin Guard",rarity:"epic",cls:"difensore",attr:"legno"},
+  {slug:"wooden-wizard",name:"Wooden Wizard",rarity:"epic",cls:"supporto",attr:"legno"},
+  {slug:"dwarf-berserker",name:"Dwarf Berserker",rarity:"epic",cls:"guerriero",attr:"fisico"},
+  {slug:"royal-archer",name:"Royal Archer",rarity:"epic",cls:"arciere",attr:"fisico"},
+  {slug:"berserker",name:"Berserker",rarity:"rare",cls:"guerriero",attr:"acqua"},
+  {slug:"goblin-warrior",name:"Goblin Warrior",rarity:"rare",cls:"guerriero",attr:"fisico"},
+  {slug:"forest-scout",name:"Forest Scout",rarity:"rare",cls:"arciere",attr:"fisico"},
+  {slug:"flail-warden",name:"Flail Warden",rarity:"rare",cls:"guerriero",attr:"fisico"},
+  {slug:"apprentice-mage",name:"Apprentice Mage",rarity:"rare",cls:"mago",attr:"fuoco"},
+  {slug:"frost-skeleton",name:"Frost Skeleton",rarity:"rare",cls:"guerriero",attr:"acqua"},
+  {slug:"cannon-chariot",name:"Cannon Chariot",rarity:"rare",cls:"arciere",attr:"fuoco"},
+  {slug:"bomber",name:"Bomber",rarity:"rare",cls:"mago",attr:"fuoco"},
+  {slug:"gale-wolf",name:"Gale Wolf",rarity:"rare",cls:"guerriero",attr:"fisico"},
+  {slug:"paladin",name:"Paladin",rarity:"rare",cls:"difensore",attr:"fisico"},
+  {slug:"goblin-chef",name:"Goblin Chef",rarity:"rare",cls:"difensore",attr:"fisico"},
+  {slug:"goblin-shaman",name:"Goblin Shaman",rarity:"rare",cls:"supporto",attr:"legno"},
+  {slug:"archer",name:"Archer",rarity:"common",cls:"arciere",attr:"fisico"},
+  {slug:"gunner",name:"Gunner",rarity:"common",cls:"arciere",attr:"fuoco"},
+  {slug:"demoman",name:"Demoman",rarity:"common",cls:"supporto",attr:"fisico"},
+  {slug:"snowball-thrower",name:"Snowball Thrower",rarity:"common",cls:"supporto",attr:"acqua"},
+  {slug:"swordsman",name:"Swordsman",rarity:"common",cls:"guerriero",attr:"fisico"},
+  {slug:"woodshield-guard",name:"Woodshield Guard",rarity:"common",cls:"difensore",attr:"fisico"}
 ];
 /* ===== Lista predefinita =====
    Si crea dalla pagina (✏️ Modifica → 💾 Scarica) e il file scaricato si incolla qui.
@@ -125,7 +154,7 @@ function renderTierList(){
 }
 function tlPickOpen(){
   const have=new Set(TL.list.map(e=>e.slug)); $("#tlPickQ").value="";
-  $("#tlPickGrid").innerHTML=["mythic","legendary"].map(r=>`<h3>${r==="mythic"?"Mitici":"Leggendari"}</h3><div class="tcards">`+TROOPS.filter(x=>x.rarity===r).sort((a,b)=>a.name.localeCompare(b.name)).map(x=>
+  $("#tlPickGrid").innerHTML=["mythic","legendary","epic","rare","common"].filter(r=>TROOPS.some(x=>x.rarity===r)).map(r=>`<h3>${{mythic:"Mitici",legendary:"Leggendari",epic:"Epici",rare:"Rari",common:"Comuni"}[r]}</h3><div class="tcards">`+TROOPS.filter(x=>x.rarity===r).sort((a,b)=>a.name.localeCompare(b.name)).map(x=>
     `<button class="tpick${have.has(x.slug)?" used":""}" data-s="${x.slug}" data-n="${esc(x.name.toLowerCase())}" ${have.has(x.slug)?'disabled title="Già nella lista"':""}><div class="tcard"><img src="img/truppe/${x.slug}.webp" alt="" width="64" height="64" loading="lazy"><div class="tname">${esc(x.name)}</div></div></button>`).join("")+`</div>`).join("");
   $("#tlPick").showModal(); setTimeout(()=>$("#tlPickQ").focus(),30);
 }
