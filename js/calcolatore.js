@@ -159,6 +159,7 @@ function recalcNow(){
 
   $("#planNote").innerHTML=planNoteTxt(D+evDays(),ev&&N>0);
   renderRiskWarn(chosen,rows,N);
+  renderSpinOut(chosen,N,D,rar);
   renderPlan("#planTyp",sc[0].plan,D+evDays(),sc[0].miss);
   renderPlan("#planBad",sc[1].plan,D+evDays(),sc[1].miss);
   { const hz=p=>ev&&N>0&&p?(p.HZ!=null?p.HZ:p.H+evDays()):D+evDays();
@@ -189,6 +190,44 @@ function renderSchedule(sc,row){
     `<tr class="best"><td colspan="2">Da comprare in tutto</td><td colspan="4" class="l">se va normalmente <b>${fmt(T?Math.ceil(T.R):0)}</b> gemme (${eur(T?T.cost:0)}) · se va male <b>${fmt(Math.ceil(P.R))}</b> gemme (${eur(P.cost)}), pass mensili compresi</td></tr>`;
 }
 
+// "Cosa aspettarti dai N giri": traguardi sicuri + copie a caso, distribuzione esatta sui giri della prossima ruota
+function spinDist(s,rar,n){
+  const pool=Math.max(1,+s.pool[rar]||1), q=[]; let pos=0;
+  (s.rates[rar]||[]).forEach(e=>{ q[e.c]=(q[e.c]||0)+e.p/pool; pos+=e.p/pool; });
+  for(let i=0;i<q.length;i++) q[i]=q[i]||0; q[0]=Math.max(0,1-pos);
+  const ms=parseMilestones(s.milestones).filter(m=>m.type==="card"&&m.rarity===rar), start=+s.start||0;
+  const cap=n*(q.length-1)+ms.reduce((a,m)=>a+m.copies*Math.ceil(n/(s.cycle||n)),0)+1;
+  let d=new Float64Array(cap+1), nx=new Float64Array(cap+1); d[0]=1;
+  for(let k=1;k<=n;k++){
+    nx.fill(0); for(let i=0;i<=cap;i++){ const v=d[i]; if(v) for(let c=0;c<q.length;c++) if(q[c]) nx[Math.min(cap,i+c)]+=v*q[c]; } [d,nx]=[nx,d];
+    for(const m of milestoneHits(s,ms,start+k)){ const p=m.choose?1:1/pool; nx.fill(0); for(let i=0;i<=cap;i++){ const v=d[i]; if(v){ nx[Math.min(cap,i+m.copies)]+=v*p; nx[i]+=v*(1-p); } } [d,nx]=[nx,d]; }
+  }
+  let mean=0, acc=0; const P=[]; for(let i=0;i<=cap;i++){ mean+=i*d[i]; acc+=d[i]; P.push(acc); }   // P[x] = prob. di avere al massimo x copie
+  // primo x con P[x] oltre la soglia: mediana; "se va male" = almeno x 9 volte su 10; "fortuna" = x o più 1 volta su 10
+  const first=(p,strict)=>{ for(let x=0;x<P.length;x++) if(strict?P[x]>p:P[x]>=p) return x; return cap; };
+  return {mean, randMean:n*q.reduce((a,v,c)=>a+v*c,0), typ:first(.5), bad:first(.1,true), luck:first(.9,true)};
+}
+function renderSpinOut(chosen,N,D,rar){
+  const el=$("#spinOut"); if(!el) return;
+  if(!(N>0&&chosen&&chosen.src.type!=="board"&&!chosen.src.scrolls)){ el.innerHTML=""; return; }
+  const src=chosen.src, s=withStop(src,chosen.stop), n=chosen.stop||chosen.nT, u=src.unit||"giri";
+  if(!(n>1)){ el.innerHTML=""; return; }
+  const st=spinDist(s,rar,n), start=+s.start||0, pool=Math.max(1,+s.pool[rar]||1);
+  const hits=[]; for(let a=start+1;a<=start+n;a++) milestoneHits(s,parseMilestones(s.milestones),a).forEach(m=>hits.push({a:a-start,m}));
+  const RIT={mythic:"mitica",legendary:"leggendaria",epic:"epica",rare:"rara",common:"comune"};
+  const msTxt=hits.map(({a,m})=>`giro ${a}: `+(m.type==="card"?`${m.copies} ${m.copies===1?"copia":"copie"}${m.rarity===rar?"":" "+(RIT[m.rarity]||"")}${!m.choose&&pool>1?" (se esce la tua)":""}`:m.type==="gems"?`${fmt(m.amount)} gemme indietro`:`${fmt(m.amount)} pietre forgia`));
+  const sure=hits.filter(h=>h.m.type==="card"&&h.m.rarity===rar&&(h.m.choose||pool===1)).reduce((a,h)=>a+h.m.copies,0);
+  const refund=hits.filter(h=>h.m.type==="gems").reduce((a,h)=>a+h.m.amount,0), cost=gemCost(s,n);
+  const when=chosen.stop?(D<=0?"di oggi":`della prossima ruota (${itDate(addDays(D))})`):(D<=0?"da fare oggi":`da fare il ${itDate(addDays(D))}`);
+  const c=x=>`<b>${fmt(x)}</b> ${x===1?"copia":"copie"}`;
+  const li=[];
+  if(hits.length) li.push(`<b>Traguardi:</b> ${msTxt.join(" · ")}${sure?` → ${c(sure)} sicure`:""}.`);
+  li.push(`<b>Dai giri, a caso:</b> in media ${fmt(st.randMean,1).replace(/,0$/,"")} ${st.randMean===1?"copia":"copie"} in più.`);
+  li.push(`<b>In tutto:</b> se va normalmente ${c(st.typ)}, se va male almeno ${c(st.bad)} (9 volte su 10), con un po' di fortuna ${c(st.luck)} o più (1 volta su 10).`);
+  li.push(`<b>Costo:</b> ${fmt(n)} ${u} × ${fmt(src.cost)} = ${fmt(n*src.cost)} gemme${refund?`, meno ${fmt(refund)} di rimborso = <b>${fmt(cost)}</b>`:""}.`);
+  if(chosen.stop&&N>st.typ) li.push(`Te ne servono ${fmt(N)}: dopo questa ruota, se va normalmente, ne mancano ancora circa <b>${fmt(N-st.typ)}</b>. Fermati a ${fmt(n)} ${u} e aspetta la ruota successiva.`);
+  el.innerHTML=`<div class="howbox"><b>🎡 Cosa aspettarti dai ${fmt(n)} ${u} ${when}</b>${chosen.stop?"":`<span class="muted"> (se va male ne servono ${fmt(chosen.nB)})</span>`}<ul>${li.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
+}
 function renderRiskWarn(chosen,rows,N){
   const el=$("#riskWarn");
   if(!(N>0&&chosen&&chosen.multi)){ el.innerHTML=""; return; }
