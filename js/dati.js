@@ -9,7 +9,7 @@ const LS_KEY = "warinc-calc-v2";
 const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta\n200: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 21,
+  ver: 22,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -56,9 +56,9 @@ const DEFAULTS = {
   // entrate gratuite: "gems" ogni "every" giorni (1 = al giorno, 7 = a settimana, 14 = ogni 2 settimane)
   free: [
     {name:"Guerra infinita", gems:400, every:1, on:true},
-    {name:"Missioni pass giornaliere", gems:120, every:1, on:true},
+    {name:"Missioni pass giornaliere", gems:140, every:1, on:true},
     {name:"Missioni pass settimanali", gems:400, every:7, on:true},
-    {name:"Missioni pass stagionali", gems:500, every:14, on:true},
+    {name:"Missioni pass stagionali", gems:520, every:14, on:true},
     {name:"Pass battaglia (ricompense gratis)", gems:510, every:14, on:true},
     {name:"Caccia", gems:500, every:7, on:true},
     {name:"Co-op", gems:600, every:7, on:true},
@@ -121,7 +121,8 @@ function loadCfg(raw){
   }
   // l'Asso carte ha anche il traguardo 200 (1 mitico)
   if(v<21) c.sources.forEach(x=>{ if(x.type==="board"&&!/^\s*200\s*:/m.test(x.milestones||"")) x.milestones=String(x.milestones||"").replace(/\s*$/,"")+"\n200: carta mythic x1 scelta"; });
-  c.ver=21;
+  if(v<22) (c.free||[]).forEach(f=>{ if(f.name==="Missioni pass giornaliere"&&+f.gems===120) f.gems=140; if(f.name==="Missioni pass stagionali"&&+f.gems===500) f.gems=520; });
+  c.ver=22;
   return c;
 }
 const PASS_REN_UI={"Carta mensile gemme":"Pass mensile gemme","Pass mensile base":"Pass mensile gemme","Carta mensile (avanzata)":"Pass mensile avanzato"};
