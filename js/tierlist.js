@@ -121,7 +121,7 @@ function renderTierList(){
       <div class="card">${L.map(tlRowView).join("")||`<p class="muted">${TL.list.length?"Nessun personaggio per questo filtro.":"La lista è ancora vuota: premi «✏️ Modifica» per crearla."}</p>`}
       ${L.length?`<p class="muted" style="margin:10px 0 0">${L.length} ${L.length===1?"personaggio":"personaggi"} · in tutto ${fmt(tot)} copie singole.</p>`:""}</div>`;
   }
-  el.innerHTML=bar+body+`<p class="muted" style="margin:4px 4px 16px">Nomi e ritratti da <a href="https://warincwiz.com/troops" target="_blank" rel="noopener">warincwiz.com</a>.</p>`;
+  el.innerHTML=bar+body;
 }
 function tlPickOpen(){
   const have=new Set(TL.list.map(e=>e.slug)); $("#tlPickQ").value="";
