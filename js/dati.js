@@ -6,10 +6,10 @@
 const RAR = ["mythic","legendary","epic","rare","common"];
 const RAR_IT = {mythic:"Mitico",legendary:"Leggendario",epic:"Epico",rare:"Raro",common:"Comune"};
 const LS_KEY = "warinc-calc-v2";
-const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta";
+const MS_ASSO = "10: carta mythic x1 scelta\n30: carta mythic x1 scelta\n60: carta mythic x1 scelta\n100: carta mythic x1 scelta\n200: carta mythic x1 scelta";
 
 const DEFAULTS = {
-  ver: 20,
+  ver: 21,
   maxLevel: 9,
   mergeSize: 2,
   forge: { // pietre forgia per creare 1 unità del livello indicato (7 = fusione L6+L6)
@@ -119,7 +119,9 @@ function loadCfg(raw){
     const ord=DEFAULTS.free.map(f=>f.name), pos=f=>{ const i=ord.indexOf(f.name); return i<0?999:i; };
     c.free=(c.free||[]).map((f,i)=>({f,i})).sort((a,b)=>pos(a.f)-pos(b.f)||a.i-b.i).map(x=>x.f);
   }
-  c.ver=20;
+  // l'Asso carte ha anche il traguardo 200 (1 mitico)
+  if(v<21) c.sources.forEach(x=>{ if(x.type==="board"&&!/^\s*200\s*:/m.test(x.milestones||"")) x.milestones=String(x.milestones||"").replace(/\s*$/,"")+"\n200: carta mythic x1 scelta"; });
+  c.ver=21;
   return c;
 }
 const PASS_REN_UI={"Carta mensile gemme":"Pass mensile gemme","Pass mensile base":"Pass mensile gemme","Carta mensile (avanzata)":"Pass mensile avanzato"};
