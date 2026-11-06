@@ -4,8 +4,9 @@
    UTILITÀ
    ===================================================================== */
 const $ = s => document.querySelector(s);
-const fmt = (n,d=0) => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("it-IT",{maximumFractionDigits:d,minimumFractionDigits:d});
-const eur = n => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("it-IT",{style:"currency",currency:"EUR"});
+// "de-DE": stessi separatori dell'italiano, ma col punto anche sui numeri a 4 cifre (it-IT scrive 4200)
+const fmt = (n,d=0) => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("de-DE",{maximumFractionDigits:d,minimumFractionDigits:d});
+const eur = n => (n==null||!isFinite(n)) ? "—" : n.toLocaleString("de-DE",{style:"currency",currency:"EUR"});
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const gg = d => fmt(d)+(d===1?" giorno":" giorni");
 const pct = x => (x>=0?"+":"")+fmt(x*100)+"%";
