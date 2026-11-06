@@ -185,11 +185,17 @@ function renderTierList(){
   }
   el.innerHTML=bar+body;
 }
-function tlPickOpen(){
-  const have=new Set(TL.list.map(e=>e.slug)); $("#tlPickQ").value="";
+// selettore di personaggi condiviso (tier list, formazioni): have = già usati (disattivati), onPick(slug)
+let tpOnPick=null;
+function troopPick(title,have,onPick){
+  $("#tlPickT").textContent=title; $("#tlPickQ").value=""; tpOnPick=onPick;
   $("#tlPickGrid").innerHTML=["mythic","legendary","epic","rare","common"].filter(r=>TROOPS.some(x=>x.rarity===r)).map(r=>`<h3>${{mythic:"Mitici",legendary:"Leggendari",epic:"Epici",rare:"Rari",common:"Comuni"}[r]}</h3><div class="tcards">`+TROOPS.filter(x=>x.rarity===r).sort((a,b)=>a.name.localeCompare(b.name)).map(x=>
     `<button class="tpick${have.has(x.slug)?" used":""}" data-s="${x.slug}" data-n="${esc(x.name.toLowerCase())}" ${have.has(x.slug)?'disabled title="Già nella lista"':""}><div class="tcard"><img src="img/truppe/${x.slug}.webp" alt="" width="64" height="64" loading="lazy"><div class="tname">${esc(x.name)}</div></div></button>`).join("")+`</div>`).join("");
   $("#tlPick").showModal(); setTimeout(()=>$("#tlPickQ").focus(),30);
+}
+function tlPickOpen(){
+  troopPick("Aggiungi personaggio",new Set(TL.list.map(e=>e.slug)),s=>{
+    TL.list.push({slug:s,lv:troopBy[s].rarity==="mythic"?4:3,n:1,pvp:false,iw:false,boss:false,gems:true,forge:false,s4:false,note:""}); tlSave(); });
 }
 $("#tierLists").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return; const act=b.dataset.act, i=+b.dataset.i;
@@ -212,9 +218,8 @@ $("#tierLists").addEventListener("change",e=>{
   tlSave();
 });
 $("#tlPickGrid").addEventListener("click",e=>{
-  const b=e.target.closest(".tpick"); if(!b||b.disabled) return; const s=b.dataset.s;
-  TL.list.push({slug:s,lv:troopBy[s].rarity==="mythic"?4:3,n:1,pvp:false,iw:false,boss:false,gems:true,forge:false,s4:false,note:""});
-  $("#tlPick").close(); tlSave();
+  const b=e.target.closest(".tpick"); if(!b||b.disabled) return;
+  $("#tlPick").close(); const f=tpOnPick; tpOnPick=null; if(f) f(b.dataset.s);
 });
 $("#tlPickQ").addEventListener("input",e=>{ const q=e.target.value.trim().toLowerCase(); document.querySelectorAll("#tlPickGrid .tpick").forEach(b=>b.hidden=!!q&&!b.dataset.n.includes(q)); });
 $("#tlPickClose").onclick=()=>$("#tlPick").close();

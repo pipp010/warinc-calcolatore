@@ -18,7 +18,8 @@ $("#themeBtn").onclick=()=>{
 
 function renderAll(){ renderInputs(); renderSettings(); recalcNow(); renderTierList(); }
 renderAll();
-showPage("calc");   // all'avvio si apre sempre il Calcolatore
+// all'avvio si apre sempre il Calcolatore; la sezione nascosta Formazioni si apre con #formazioni nell'indirizzo
+if(location.hash==="#formazioni"){ $('#tabs [data-p="form"]').hidden=false; showPage("form"); } else showPage("calc");
 
 // messaggio di benvenuto: suggerisce la guida a ogni avvio, finché non si spunta «Non mostrare più»
 { const dlg=$("#guideDlg"), close=()=>{ if($("#guideDlgHide").checked) lsSet(LS_KEY+"-noguide","1"); dlg.close(); };
