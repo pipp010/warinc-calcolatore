@@ -6,11 +6,11 @@
 <title>War Inc Calcolatore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5.3">
+<link rel="stylesheet" href="css/style.css?v=5.4">
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.3</small></h1>
+  <h1>War Inc<span class="lbl"> ·</span> Calcolatore <small>v5.4</small></h1>
   <nav class="tabs" id="tabs">
     <button data-p="calc" class="on">🧮 Calcolatore</button>
     <button data-p="mine" hidden>⛏️ Miniera</button><!-- miniera nascosta: da riattivare togliendo hidden -->
@@ -306,7 +306,7 @@
   <div class="card" id="g-scopo">
     <h2>🎯 A cosa serve questo calcolatore</h2>
     <p class="lead">In War Inc Rising, per crescere servono le <b>gemme</b>: c'è poco da girarci intorno. Truppe mitiche, livelli e fusioni passano tutti da lì.</p>
-    <p class="lead">Ma le gemme da sole non bastano: vanno <b>spese con la testa</b>. Con le stesse 30.000 gemme puoi completare quasi una truppa mitica oppure ritrovarti con poche copie sparse. Dipende da dove, quando e come le spendi.</p>
+    <p class="lead">Ma le gemme da sole non bastano: vanno <b>spese con criterio</b>. Con le stesse 30.000 gemme puoi completare quasi una truppa mitica oppure ritrovarti con poche copie sparse. Dipende da dove, quando e come le spendi.</p>
     <div class="aims">
       <div><span>1</span><b>Da dove arrivano le gemme</b>Tutte le fonti, gratis e a pagamento, e quanto rende ognuna.</div>
       <div><span>2</span><b>Quante ne puoi avere</b>Una stima di quante gemme metti da parte entro un evento: solo gratis, oppure spendendo poco.</div>
@@ -318,10 +318,10 @@
     <h2>📅 Cosa puoi ottenere in un mese</h2>
     <p class="sub">Esempi con le impostazioni predefinite (QG livello 5), una Ruota e un Asso carte al mese. Sono valori medi: le copie vanno alla truppa in palio in quell'evento.</p>
     <div class="tw"><table class="plantbl" id="monthTbl">
-      <tr><th class="l">Se spendi</th><th>Gemme al mese</th><th class="l">Come spenderle con la testa</th><th class="l">Risultato medio</th></tr>
+      <tr><th class="l">Se spendi</th><th>Gemme al mese</th><th class="l">Come spenderle al meglio</th><th class="l">Risultato medio</th></tr>
       <tr><td class="l"><b>0 €</b><br><span class="muted">solo entrate gratuite</span></td><td>~42.800</td><td class="l">1 Ruota fermandoti a 100 giri (~9.500 gemme)<br>+ 1 Asso carte fermandoti a 100 carte (~25.000 gemme)</td><td class="l"><b>~27 copie mitiche</b> (8 + 19)<br><span class="muted">e ~8.000 gemme di scorta per quando va male</span></td></tr>
-      <tr><td class="l"><b>18,98 €</b><br><span class="muted">pass mensile gemme + avanzato</span></td><td>~58.000</td><td class="l">1 Ruota a 100 giri<br>+ Asso carte oltre le 100 carte (~48.000 gemme)</td><td class="l"><b>~40 copie mitiche</b><br><span class="muted">dall'Asso carte arrivano ~32 copie: una truppa mitica a livello 6 in un solo evento</span></td></tr>
-      <tr><td class="l"><b>29,67 €</b><br><span class="muted">tutti i pass</span></td><td>~62.000</td><td class="l">Come sopra, con più margine: l'Asso carte fino alle 32 copie anche se va male (50.000 gemme)</td><td class="l"><b>truppa mitica a livello 6 sicura</b><br><span class="muted">+ ~8 copie dalla Ruota</span></td></tr>
+      <tr><td class="l"><b>18,98 €</b><br><span class="muted">pass mensile gemme + avanzato</span></td><td>~58.000</td><td class="l">1 Ruota a 100 giri<br>+ Asso carte oltre le 100 carte (~48.000 gemme)</td><td class="l"><b>~40 copie mitiche</b> (8 + 32)<br><span class="muted">dall'Asso carte arrivano ~32 copie: una truppa mitica a livello 6 in un solo evento</span></td></tr>
+      <tr><td class="l"><b>29,67 €</b><br><span class="muted">tutti i pass</span></td><td>~62.000</td><td class="l">Come sopra, con più margine: l'Asso carte fino alle 32 copie anche se va male (50.000 gemme)</td><td class="l"><b>~40 copie mitiche</b> (8 + 32)<br><span class="muted">le 32 dell'Asso carte arrivano anche se va male: truppa mitica a livello 6 sicura</span></td></tr>
     </table></div>
     <h3>Cosa invece fa sprecare gemme (o soldi)</h3>
     <ul>
@@ -479,13 +479,13 @@
 </section>
 </div>
 
-<script src="js/dati.js?v=5.3"></script>
-<script src="js/calcoli.js?v=5.3"></script>
-<script src="js/calcolatore.js?v=5.3"></script>
-<script src="js/zero-shopping.js?v=5.3"></script>
-<script src="js/impostazioni.js?v=5.3"></script>
-<script src="js/avanzata.js?v=5.3"></script>
-<script src="js/miniera.js?v=5.3"></script>
-<script src="js/avvio.js?v=5.3"></script>
+<script src="js/dati.js?v=5.4"></script>
+<script src="js/calcoli.js?v=5.4"></script>
+<script src="js/calcolatore.js?v=5.4"></script>
+<script src="js/zero-shopping.js?v=5.4"></script>
+<script src="js/impostazioni.js?v=5.4"></script>
+<script src="js/avanzata.js?v=5.4"></script>
+<script src="js/miniera.js?v=5.4"></script>
+<script src="js/avvio.js?v=5.4"></script>
 </body>
 </html>
