@@ -190,7 +190,13 @@ function renderSchedule(sc,row){
     `<tr class="best"><td colspan="2">Da comprare in tutto</td><td colspan="4" class="l">se va normalmente <b>${fmt(T?Math.ceil(T.R):0)}</b> gemme (${eur(T?T.cost:0)}) · se va male <b>${fmt(Math.ceil(P.R))}</b> gemme (${eur(P.cost)}), pass mensili compresi</td></tr>`;
 }
 
-// "Cosa aspettarti dai N giri": traguardi sicuri + copie a caso, distribuzione esatta sui giri della prossima ruota
+// "Cosa aspettarti dai N giri/carte": traguardi sicuri + copie a caso, distribuzione esatta sulla prossima ruota/evento
+// d = distribuzione delle copie; restituisce media, mediana, "se va male" (almeno x 9 volte su 10) e "fortuna" (x o più 1 volta su 10)
+function distStats(d,randMean){
+  let acc=0; const P=[]; for(let i=0;i<d.length;i++){ acc+=d[i]; P.push(acc); }
+  const first=(p,strict)=>{ for(let x=0;x<P.length;x++) if(strict?P[x]>p:P[x]>=p) return x; return P.length-1; };
+  return {randMean, typ:first(.5), bad:first(.1,true), luck:first(.9,true)};
+}
 function spinDist(s,rar,n){
   const pool=Math.max(1,+s.pool[rar]||1), q=[]; let pos=0;
   (s.rates[rar]||[]).forEach(e=>{ q[e.c]=(q[e.c]||0)+e.p/pool; pos+=e.p/pool; });
@@ -202,31 +208,52 @@ function spinDist(s,rar,n){
     nx.fill(0); for(let i=0;i<=cap;i++){ const v=d[i]; if(v) for(let c=0;c<q.length;c++) if(q[c]) nx[Math.min(cap,i+c)]+=v*q[c]; } [d,nx]=[nx,d];
     for(const m of milestoneHits(s,ms,start+k)){ const p=m.choose?1:1/pool; nx.fill(0); for(let i=0;i<=cap;i++){ const v=d[i]; if(v){ nx[Math.min(cap,i+m.copies)]+=v*p; nx[i]+=v*(1-p); } } [d,nx]=[nx,d]; }
   }
-  let mean=0, acc=0; const P=[]; for(let i=0;i<=cap;i++){ mean+=i*d[i]; acc+=d[i]; P.push(acc); }   // P[x] = prob. di avere al massimo x copie
-  // primo x con P[x] oltre la soglia: mediana; "se va male" = almeno x 9 volte su 10; "fortuna" = x o più 1 volta su 10
-  const first=(p,strict)=>{ for(let x=0;x<P.length;x++) if(strict?P[x]>p:P[x]>=p) return x; return cap; };
-  return {mean, randMean:n*q.reduce((a,v,c)=>a+v*c,0), typ:first(.5), bad:first(.1,true), luck:first(.9,true)};
+  return distStats(d,n*q.reduce((a,v,c)=>a+v*c,0));
+}
+// tabellone: n unità (carte a ×1) a partire da "start"; a ×m ogni carta vale m unità e m copie; il tabellone si rimescola quando esce il mitico
+function boardDist(src,n,start,stop,m){
+  const M=Math.max(1,+src.cards||12), h=Math.max(1,Math.min(M,+src.hits||1)), J=M-h+1;
+  const ms=parseMilestones(src.milestones||"").filter(x=>x.type==="card"&&x.rarity==="mythic"&&(!stop||x.at<=stop));
+  const cap=n+ms.reduce((a,x)=>a+x.copies,0)*Math.max(1,Math.ceil(n/(stop||n)))+1;
+  let d=new Float64Array((cap+1)*J); d[0]=1; let randMean=0, t=0;
+  while(t<n){
+    const k=m>1&&n-t>=m?m:1; let b=0;
+    for(let u=1;u<=k;u++){ const p=stop?(((start+t+u-1)%stop)+1):start+t+u; for(const x of ms) if(x.at===p) b+=x.copies; }
+    const nx=new Float64Array((cap+1)*J);
+    for(let c=0;c<=cap;c++) for(let j=0;j<J;j++){ const v=d[c*J+j]; if(!v) continue;
+      const pH=h/(M-j); randMean+=v*pH*k;
+      nx[Math.min(cap,c+k+b)*J]+=v*pH;
+      if(pH<1) nx[Math.min(cap,c+b)*J+j+1]+=v*(1-pH);
+    }
+    d=nx; t+=k;
+  }
+  const dc=new Float64Array(cap+1); for(let c=0;c<=cap;c++) for(let j=0;j<J;j++) dc[c]+=d[c*J+j];
+  return distStats(dc,randMean);
 }
 function renderSpinOut(chosen,N,D,rar){
   const el=$("#spinOut"); if(!el) return;
-  if(!(N>0&&chosen&&chosen.src.type!=="board"&&!chosen.src.scrolls)){ el.innerHTML=""; return; }
-  const src=chosen.src, s=withStop(src,chosen.stop), n=chosen.stop||chosen.nT, u=src.unit||"giri";
+  if(!(N>0&&chosen&&!chosen.src.scrolls)){ el.innerHTML=""; return; }
+  const src=chosen.src, board=src.type==="board", u=src.unit||(board?"carte":"giri"), n=chosen.stop||chosen.nT;
   if(!(n>1)){ el.innerHTML=""; return; }
-  const st=spinDist(s,rar,n), start=+s.start||0, pool=Math.max(1,+s.pool[rar]||1);
-  const hits=[]; for(let a=start+1;a<=start+n;a++) milestoneHits(s,parseMilestones(s.milestones),a).forEach(m=>hits.push({a:a-start,m}));
-  const RIT={mythic:"mitica",legendary:"leggendaria",epic:"epica",rare:"rara",common:"comune"};
-  const msTxt=hits.map(({a,m})=>`giro ${a}: `+(m.type==="card"?`${m.copies} ${m.copies===1?"copia":"copie"}${m.rarity===rar?"":" "+(RIT[m.rarity]||"")}${!m.choose&&pool>1?" (se esce la tua)":""}`:m.type==="gems"?`${fmt(m.amount)} gemme indietro`:`${fmt(m.amount)} pietre forgia`));
+  const m=board&&chosen.multi?Math.max(1,+src.multi||1):1;
+  const s=board?src:withStop(src,chosen.stop), start=board?(chosen.stop?0:num(src.start)):(+s.start||0);
+  const st=board?boardDist(src,n,start,chosen.stop,m):spinDist(s,rar,n), pool=board?1:Math.max(1,+s.pool[rar]||1);
+  const msAll=parseMilestones(s.milestones||"").filter(x=>!(board&&chosen.stop)||x.at<=chosen.stop), hits=[];
+  for(let a=start+1;a<=start+n;a++) (board?msAll.filter(x=>x.at===a):milestoneHits(s,msAll,a)).forEach(x=>hits.push({a:a-start,m:x}));
+  const RIT={mythic:"mitica",legendary:"leggendaria",epic:"epica",rare:"rara",common:"comune"}, uno=board?"carta":"giro";
+  const msTxt=hits.map(({a,m:x})=>`${uno} ${a}: `+(x.type==="card"?`${x.copies} ${x.copies===1?"copia":"copie"}${x.rarity===rar?"":" "+(RIT[x.rarity]||"")}${!x.choose&&pool>1?" (se esce la tua)":""}`:x.type==="gems"?`${fmt(x.amount)} gemme indietro`:`${fmt(x.amount)} pietre forgia`));
   const sure=hits.filter(h=>h.m.type==="card"&&h.m.rarity===rar&&(h.m.choose||pool===1)).reduce((a,h)=>a+h.m.copies,0);
-  const refund=hits.filter(h=>h.m.type==="gems").reduce((a,h)=>a+h.m.amount,0), cost=gemCost(s,n);
-  const when=chosen.stop?(D<=0?"di oggi":`della prossima ruota (${itDate(addDays(D))})`):(D<=0?"da fare oggi":`da fare il ${itDate(addDays(D))}`);
-  const c=x=>`<b>${fmt(x)}</b> ${x===1?"copia":"copie"}`;
-  const li=[];
+  const refund=hits.filter(h=>h.m.type==="gems").reduce((a,h)=>a+h.m.amount,0), cost=board?n*src.cost:gemCost(s,n);
+  const nome=board?"del prossimo evento":"della prossima ruota", oggi=board?"dell'evento di oggi":"di oggi";
+  const when=chosen.stop?(D<=0?oggi:`${nome} (${itDate(addDays(D))})`):(D<=0?"da fare oggi":`da fare dal ${itDate(addDays(D))}`);
+  const c=x=>`<b>${fmt(x)}</b> ${x===1?"copia":"copie"}`, M=Math.max(1,+src.cards||12), li=[];
   if(hits.length) li.push(`<b>Traguardi:</b> ${msTxt.join(" · ")}${sure?` → ${c(sure)} sicure`:""}.`);
-  li.push(`<b>Dai giri, a caso:</b> in media ${fmt(st.randMean,1).replace(/,0$/,"")} ${st.randMean===1?"copia":"copie"} in più.`);
+  li.push(board?`<b>Dai tabelloni, a caso:</b> in media ${fmt(st.randMean,1).replace(/,0$/,"")} copie in più (il mitico è 1 carta su ${M}: in media lo trovi in ${fmt((M+1)/2,1).replace(/,0$/,"")} carte, poi il tabellone si rimescola).`
+    :`<b>Dai giri, a caso:</b> in media ${fmt(st.randMean,1).replace(/,0$/,"")} ${st.randMean===1?"copia":"copie"} in più.`);
   li.push(`<b>In tutto:</b> se va normalmente ${c(st.typ)}, se va male almeno ${c(st.bad)} (9 volte su 10), con un po' di fortuna ${c(st.luck)} o più (1 volta su 10).`);
-  li.push(`<b>Costo:</b> ${fmt(n)} ${u} × ${fmt(src.cost)} = ${fmt(n*src.cost)} gemme${refund?`, meno ${fmt(refund)} di rimborso = <b>${fmt(cost)}</b>`:""}.`);
-  if(chosen.stop&&N>st.typ) li.push(`Te ne servono ${fmt(N)}: dopo questa ruota, se va normalmente, ne mancano ancora circa <b>${fmt(N-st.typ)}</b>. Fermati a ${fmt(n)} ${u} e aspetta la ruota successiva.`);
-  el.innerHTML=`<div class="howbox"><b>🎡 Cosa aspettarti dai ${fmt(n)} ${u} ${when}</b>${chosen.stop?"":`<span class="muted"> (se va male ne servono ${fmt(chosen.nB)})</span>`}<ul>${li.map(x=>`<li>${x}</li>`).join("")}</ul></div>`;
+  li.push(`<b>Costo:</b> ${fmt(n)} ${u} × ${fmt(src.cost)} = ${fmt(n*src.cost)} gemme${refund?`, meno ${fmt(refund)} di rimborso = <b>${fmt(cost)}</b>`:""}${m>1?` (a ×${m} sono ${fmt(Math.round(n/m))} carte da ${fmt(src.cost*m)} gemme)`:""}.`);
+  if(chosen.stop&&N>st.typ) li.push(`Te ne servono ${fmt(N)}: dopo ${board?"questo evento":"questa ruota"}, se va normalmente, ne mancano ancora circa <b>${fmt(N-st.typ)}</b>. Fermati a ${fmt(n)} ${u} e aspetta ${board?"l'evento successivo":"la ruota successiva"}.`);
+  el.innerHTML=`<div class="howbox"><b>${board?"🃏":"🎡"} Cosa aspettarti dalle ${fmt(n)} ${u} ${when}</b>${chosen.stop?"":`<span class="muted"> (se va male ne servono ${fmt(chosen.nB)})</span>`}<ul>${li.map(x=>`<li>${x}</li>`).join("")}</ul></div>`.replace(/dalle (\S+) giri/,"dai $1 giri");
 }
 function renderRiskWarn(chosen,rows,N){
   const el=$("#riskWarn");
