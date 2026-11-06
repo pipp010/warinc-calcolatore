@@ -181,6 +181,7 @@ function advRecalc(){
   if([...same.values()].some(v=>v>1)) add("",`Ci sono più eventi nella stessa settimana: il calendario tiene conto che le gemme sono le stesse per tutti.`);
   if(evs.some(e=>e.e.x5&&e.p.src.type==="board")) add("",`Asso carte ×5: non fa risparmiare gemme ma rende il risultato più variabile (un tabellone sfortunato costa fino a ${fmt((+cfg.sources.find(s=>s.type==="board").cards||12)*(+cfg.sources.find(s=>s.type==="board").cost||250)*5)} gemme).`);
   if(Object.values(ui.passes||{}).some(v=>v>0)) add("","I pass già attivi sono contati: le gemme giornaliere fino alla scadenza sono gratis, il rinnovo si paga solo dopo.");
+  if(goals.some(g=>g.rarity==="mythic")) add(goals.some(g=>g.rarity==="mythic"&&+g.target>4)?"key":"",MYTH4_TIP);
   if(forgeMiss>0) add("bad",`Ti mancano circa <b>${fmt(forgeMiss)}</b> pietre forgia per tutte le fusioni.`);
   $("#advTips").innerHTML=tipsHtml(t);
   if(ui.zero) renderZeroAdv(sc,evs);

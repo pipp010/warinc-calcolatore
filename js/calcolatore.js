@@ -101,9 +101,11 @@ function planNoteTxt(Dp,isEv){
   const gp=cfg.gemPacks.filter(p=>p.perDay>0).map(p=>`${esc(p.name)}: max ${p.perDay} al giorno`).join(", ");
   return `ℹ️ Conti fatti per giocare <b>${playTxt()}</b>${isEv?" di ogni evento":` (${Dp<=0?"oggi":itDate(addDays(Dp))})`}. Prima si contano le gemme che hai, quelle gratis (QG, altre entrate, pass già attivi) e quelle dei pass mensili; solo il resto si compra. ${gp?gp+", da oggi fino al giorno in cui giochi.":""}`;
 }
+// Consiglio sui mitici che sbloccano la seconda abilità al livello 4
+const MYTH4_TIP=`<b>Squadra equilibrata: sfrutta i mitici forti già al livello 4.</b> Alcuni mitici sbloccano la seconda abilità al livello 4, altri solo al 6. Mentre stai crescendo i primi sono preziosissimi: danno il meglio di sé con 8 copie invece di 32. Tienili al livello 4 e portali più su solo quando anche il resto della squadra è all'altezza: un mitico al 6 o al 7 circondato da truppe deboli è come un campione in una squadra di dilettanti, da solo non vince la partita. Meglio una squadra che cresce tutta insieme che puntare tutto su un solo mitico.`;
 function tipsHtml(t){
   if(ui.zero) t=t.filter(x=>!/€|compr|pacchett|eternity/i.test(x.replace(/<[^>]+>/g,"")));
-  const good=t.filter(x=>/class="good"/.test(x)), other=t.filter(x=>!/class="good"/.test(x));
+  const top=x=>/class="(good|key)"/.test(x), good=t.filter(top), other=t.filter(x=>!top(x));
   return good.join("")+(other.length?`<li class="more"><details><summary>Mostra altri ${other.length} suggeriment${other.length===1?"o":"i"}</summary><ul class="tips" style="margin-top:8px">${other.join("")}</ul></details></li>`:"");
 }
 function recalcNow(){

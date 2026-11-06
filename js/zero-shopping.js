@@ -158,6 +158,7 @@ function renderTips(c){
   } else if(c.N>0&&A.miss===0){
     add("good",`Le gemme che hai bastano se va normalmente; se va male te ne mancano ${fmt(B.miss)}.`);
   }
+  if(c.rar==="mythic") add(c.target>4?"key":"",MYTH4_TIP);
   if(B.forgeMiss>0){
     add("bad",`Ti mancano fino a <b>${fmt(B.forgeMiss)}</b> pietre forgia per le fusioni.`);
     if(!ui.disc){ const md=planMerge(ui.inv,c.target,c.qty,c.rar,true); if(md.forge<c.mp.forge) add("",`Con l'evento sconto (${cfg.discount.pct}%) ne risparmieresti ${fmt(c.mp.forge-md.forge)}: se non hai fretta, fai le fusioni durante l'evento.`); }
