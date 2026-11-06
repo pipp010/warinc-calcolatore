@@ -20,10 +20,10 @@ const getJSON=u=>new Promise((res,rej)=>http.get(u,r=>{let d='';r.on('data',c=>d
     await send('Emulation.setDeviceMetricsOverride',{width:W,height:s.vh||900,deviceScaleFactor:s.dpr||1.5,mobile:!!s.mobile});
     await send('Page.navigate',{url}); await sleep(600);
     const ui=Object.assign({},demoUi,s.ui||{});
-    await ev(`localStorage.clear();localStorage.setItem("warinc-calc-v2-ui2",${JSON.stringify(JSON.stringify(ui))});localStorage.setItem("warinc-calc-v2-theme",${JSON.stringify(s.theme||"light")});localStorage.setItem("warinc-calc-v2-page",${JSON.stringify(s.page||"calc")});true`);
+    await ev(`localStorage.clear();localStorage.setItem("warinc-calc-v2-ui2",${JSON.stringify(JSON.stringify(ui))});localStorage.setItem("warinc-calc-v2-theme",${JSON.stringify(s.theme||"light")});localStorage.setItem("warinc-calc-v2-noguide","1");true`);
     await send('Page.reload',{ignoreCache:true}); await sleep(1500);
     await ev(`document.fonts.ready.then(()=>true)`);
-    await ev(`(()=>{ recalcNow(); ${s.js||""}; return true; })()`); await sleep(400);
+    await ev(`(()=>{ showPage(${JSON.stringify(s.page||"calc")}); recalcNow(); ${s.js||""}; return true; })()`); await sleep(400);
     const rect=await ev(`(()=>{
       const st=document.createElement("style"); st.textContent='.hl{outline:3px solid #e0482f!important;outline-offset:3px;border-radius:8px}.badge{position:absolute;z-index:999;background:#e0482f;color:#fff;font:700 15px/28px Inter,sans-serif;width:28px;height:28px;border-radius:50%;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35)} ${(s.css||"").replace(/'/g,"\'")}'; document.head.appendChild(st);
       ${JSON.stringify(s.marks||[])}.forEach(([sel,lab])=>{ const el=document.querySelector(sel); if(!el) throw new Error("manca "+sel); el.classList.add("hl"); const r=el.getBoundingClientRect(); const b=document.createElement("div"); b.className="badge"; b.textContent=lab; b.style.left=(r.left+scrollX-16)+"px"; b.style.top=(r.top+scrollY-16)+"px"; document.body.appendChild(b); });

@@ -274,3 +274,9 @@ ol.marks li::before{content:counter(mk);position:absolute;left:0;top:3px;width:2
   #guideGems .gfreq{display:block}
 }
 .tips li.key{border-left-color:#c9962b}
+/* ===== Messaggio di benvenuto ===== */
+#guideDlg{max-width:440px;width:calc(100% - 32px);border:1px solid var(--line2);border-radius:16px;background:var(--panel);color:var(--ink);padding:22px 22px 18px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#guideDlg::backdrop{background:rgba(20,16,12,.55)}
+#guideDlg h2{font-family:var(--serif);font-size:21px;margin:0 0 10px}
+#guideDlg p{line-height:1.55;margin:0 0 12px}
+#guideDlg .dlgbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}

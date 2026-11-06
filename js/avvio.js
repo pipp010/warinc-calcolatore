@@ -18,4 +18,11 @@ $("#themeBtn").onclick=()=>{
 
 function renderAll(){ renderInputs(); renderSettings(); recalcNow(); }
 renderAll();
-{ const p=lsGet(LS_KEY+"-page"); if(p&&["calc","set","info"].includes(p)) showPage(p); }
+showPage("calc");   // all'avvio si apre sempre il Calcolatore
+
+// messaggio di benvenuto: suggerisce la guida a ogni avvio, finché non si spunta «Non mostrare più»
+{ const dlg=$("#guideDlg"), close=()=>{ if($("#guideDlgHide").checked) lsSet(LS_KEY+"-noguide","1"); dlg.close(); };
+  $("#guideDlgClose").onclick=close;
+  $("#guideDlgGo").onclick=()=>{ close(); showPage("info"); window.scrollTo(0,0); };
+  dlg.addEventListener("cancel",()=>{ if($("#guideDlgHide").checked) lsSet(LS_KEY+"-noguide","1"); });   // tasto Esc
+  if(lsGet(LS_KEY+"-noguide")!=="1"&&dlg.showModal) dlg.showModal(); }
